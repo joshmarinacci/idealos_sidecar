@@ -54,4 +54,10 @@ export class Connection {
         console.log("firing",this.listeners[type])
         this.listeners[type].forEach(l => l(payload))
     }
+    request_restart(appid) {
+        this.socket.send(JSON.stringify({
+            type:'RESTART_APP_REQUEST',
+            target:appid,
+        }))
+    }
 }
