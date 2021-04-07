@@ -3,9 +3,23 @@ import {useEffect, useState} from 'react'
 export function AppList({connection}) {
     let [apps, set_apps] = useState([])
     useEffect(() => {
-        console.log("===== refreshing the app")
         connection.on("apps", (apps) => set_apps(apps))
     }, [connection])
+
+    useEffect(() => {
+        let hand = () => {
+            if(!connection.isConnected()) {
+                set_apps([])
+            }
+        }
+        connection.on('connect', hand)
+        connection.on('disconnect', hand)
+        return () => {
+            connection.off('connect',hand)
+            connection.off('disconnect',hand)
+        }
+    }, [connection])
+
 
     return <ul>
         {apps.map(app => {

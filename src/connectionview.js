@@ -1,19 +1,14 @@
-import {useEffect, useState} from 'react'
+import {useState} from 'react'
+import {useConnected} from './connection.js'
+
 
 export function ConnectStatus({connection}) {
     let [connected, set_connected] = useState(connection.isConnected())
-    useEffect(() => {
-        connection.on('connect', () => set_connected(true))
-        connection.on('disconnect', () => set_connected(false))
-    }, [connection])
+    useConnected(connection,()=> set_connected(connection.isConnected()))
     return <div>
-        <div>connect status = {connected ? "true" : "false"}</div>
-        <button onClick={() => {
-            if (connection.isConnected()) {
-                connection.disconnect()
-            } else {
-                connection.connect()
-            }
-        }}>{connected ? "disconnect" : "connect"}</button>
+        <button
+            className={connected?"connected":"disconnected"}
+            onClick={() => connection.isConnected()?connection.disconnect():connection.connect()}
+            >{connected ? "disconnect" : "connect"}</button>
     </div>
 }

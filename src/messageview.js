@@ -1,4 +1,5 @@
 import {useEffect, useState} from 'react'
+import {useConnected} from './connection.js'
 
 function props_array_string(obj) {
     if(typeof obj === 'string') return obj.toString()
@@ -29,6 +30,9 @@ export function MessageList({connection}) {
         connection.on("message", handler)
         return () => connection.off('message', handler)
     }, [connection])
+
+    useConnected(connection,()=> set_messages(connection.messages) )
+
     return <div>
         <h3>message list</h3>
         <div className={'message-list'}>

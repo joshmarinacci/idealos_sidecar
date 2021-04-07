@@ -1,3 +1,5 @@
+import {useEffect} from 'react'
+
 const on = (elm, type, cb) => elm.addEventListener(type,cb)
 function log(...args) { console.log(...args) }
 
@@ -26,6 +28,8 @@ export class Connection {
         on(this.socket, 'close',(e)=>{
             log("closed",e)
             this.connected = false
+            this.messages = []
+            this.apps = []
             this.fire("disconnect",{})
         })
         on(this.socket,'message',(e)=>{
@@ -59,4 +63,17 @@ export class Connection {
             target:appid,
         }))
     }
+}
+
+
+export function useConnected(connection,cb) {
+    useEffect(() => {
+        let hand = () => cb(connection.isConnected())
+        connection.on('connect', hand)
+        connection.on('disconnect', hand)
+        return () => {
+            connection.off('connect',hand)
+            connection.off('disconnect',hand)
+        }
+    }, [connection])
 }

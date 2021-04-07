@@ -42,3 +42,11 @@ h3 {
 }
 .message-list li.window b {
 }
+
+
+button.disconnected {
+  background-color: lightblue;
+}
+button.connected {
+  background-color: lightgreen;
+}
