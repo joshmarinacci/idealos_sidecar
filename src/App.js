@@ -10,6 +10,7 @@ class Connection {
         this.listeners = {}
         this.connected = false
         this.apps = []
+        this.messages = []
     }
     isConnected() {
         return this.connected
@@ -39,11 +40,17 @@ class Connection {
                 this.apps = msg.apps
                 this.fire("apps", this.apps)
             }
+            this.messages = this.messages.slice().concat([msg])
+            this.fire('message',msg)
         })
     }
     on(type,cb) {
         if (!this.listeners[type]) this.listeners[type] = []
         this.listeners[type].push(cb)
+    }
+    off(type,cb) {
+        if (!this.listeners[type]) this.listeners[type] = []
+        this.listeners[type] = this.listeners.filter(c => c === cb)
     }
 
     fire(type, payload) {
@@ -79,6 +86,28 @@ function AppList({apps}) {
     </ul>
 }
 
+function MessageView({message}) {
+    return <li>
+        <i>type</i> <b>{message.type}</b>
+        <i>data</i> <b>{JSON.stringify(message)}</b>
+    </li>
+}
+
+function MessageList() {
+    const [messages, set_messages] = useState([])
+    useEffect(()=>{
+        let list = (msg) => {
+            console.log("mesages len",conn.messages.length)
+            set_messages(conn.messages)
+        }
+        conn.on("message",list)
+        return () => conn.off('message',list)
+    },[])
+    return <ul>{messages.map((msg,i) => {
+        return <MessageView key={i} message={msg}/>
+    })}</ul>
+}
+
 function App() {
     let [connected, set_connected] = useState(false)
     let [apps, set_apps] = useState([])
@@ -91,6 +120,8 @@ function App() {
     return <div>
         <ConnectStatus connected={connected}/>
         <AppList apps={apps}/>
+        <h3>message list</h3>
+        <MessageList/>
     </div>
 }
 
