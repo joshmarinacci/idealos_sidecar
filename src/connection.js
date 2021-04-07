@@ -46,7 +46,7 @@ export class Connection {
     }
     off(type,cb) {
         if (!this.listeners[type]) this.listeners[type] = []
-        this.listeners[type] = this.listeners.filter(c => c === cb)
+        this.listeners[type] = this.listeners[type].filter(c => c === cb)
     }
 
     fire(type, payload) {
