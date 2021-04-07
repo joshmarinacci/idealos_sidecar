@@ -31,7 +31,7 @@ export class Connection {
         on(this.socket,'message',(e)=>{
             // log("incoming message",e)
             let msg = JSON.parse(e.data)
-            log("message arrived",msg)
+            // log("message arrived",msg)
             if(msg.type === 'DEBUG_LIST_RESPONSE') {
                 this.apps = msg.apps
                 this.fire("apps", this.apps)
@@ -51,7 +51,6 @@ export class Connection {
 
     fire(type, payload) {
         if(!this.listeners[type]) this.listeners[type] = []
-        console.log("firing",this.listeners[type])
         this.listeners[type].forEach(l => l(payload))
     }
     request_restart(appid) {
