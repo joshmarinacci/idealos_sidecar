@@ -9,6 +9,7 @@ class Connection {
     constructor() {
         this.listeners = {}
         this.connected = false
+        this.apps = []
     }
     isConnected() {
         return this.connected
@@ -21,7 +22,7 @@ class Connection {
         on(this.socket,'open',()=>{
             log("connected to the server")
             this.connected = true
-            this.socket.send(JSON.stringify({type:"DEBUG_LIST"}))
+            this.socket.send(JSON.stringify({type:"DEBUG_LIST", sender:'DEBUG_CLIENT'}))
             this.fire("connect",{})
         })
         on(this.socket,'error',(e)=> log("error",e))
@@ -29,6 +30,15 @@ class Connection {
             log("closed",e)
             this.connected = false
             this.fire("disconnect",{})
+        })
+        on(this.socket,'message',(e)=>{
+            // log("incoming message",e)
+            let msg = JSON.parse(e.data)
+            log("message arrived",msg)
+            if(msg.type === 'DEBUG_LIST_RESPONSE') {
+                this.apps = msg.apps
+                this.fire("apps", this.apps)
+            }
         })
     }
     on(type,cb) {
@@ -61,15 +71,26 @@ function ConnectStatus({connected}) {
 function make_connection() {
 }
 
+function AppList({apps}) {
+    return <ul>
+        {apps.map(app => {
+            return <li key={app.id}>{app.name} <button>restart</button></li>
+        })}
+    </ul>
+}
+
 function App() {
     let [connected, set_connected] = useState(false)
+    let [apps, set_apps] = useState([])
     useEffect(()=> {
         console.log("===== refreshing the app")
         conn.on('connect', () => set_connected(true));
         conn.on('disconnect', () => set_connected(false));
+        conn.on("apps",(apps)=>set_apps(apps))
     },[])
     return <div>
-    <ConnectStatus connected={connected}/>
+        <ConnectStatus connected={connected}/>
+        <AppList apps={apps}/>
     </div>
 }
 
