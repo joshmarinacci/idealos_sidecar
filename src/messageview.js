@@ -2,8 +2,10 @@ import {useEffect, useState} from 'react'
 import {useConnected} from './connection.js'
 
 function props_array_string(obj) {
+    if(!obj) return ""
     if(typeof obj === 'string') return obj.toString()
     if(typeof obj === 'number') return obj.toString()
+    // console.log('trying to render',obj)
     return Object.entries(obj).map(([key,val]) => {
         return <span key={key}><b>{key}</b>:<i>{props_array_string(val)}</i></span>
     })
@@ -11,11 +13,12 @@ function props_array_string(obj) {
 
 function MessageView({message}) {
     if(message.type) {
+        if(message.type === 'DRAW_PIXEL') return ""
         if(message.type === 'DEBUG_LOG') return <li className={'log'}>{message.data.map(el => props_array_string(el))}</li>
         if(message.type === 'RESTART_APP_REQUEST') return <li className={'debug-action'}>{props_array_string(message)}</li>
         if(message.type === 'DEBUG_LIST_RESPONSE') return <li className={'debug-action'}>{props_array_string(message)}</li>
         if(message.type === 'OPEN_WINDOW') return <li className={'window'}>{props_array_string(message)}</li>
-        console.log("message",message)
+        // console.log("message",message)
     }
     return <li>
         <i>type</i> <b>{message.type}</b>

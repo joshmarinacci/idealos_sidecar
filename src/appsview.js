@@ -3,7 +3,10 @@ import {useEffect, useState} from 'react'
 export function AppList({connection}) {
     let [apps, set_apps] = useState([])
     useEffect(() => {
-        connection.on("apps", (apps) => set_apps(apps))
+        connection.on("apps", (apps) => {
+            console.log("got apps response",apps)
+            set_apps(apps)
+        })
     }, [connection])
 
     useEffect(() => {

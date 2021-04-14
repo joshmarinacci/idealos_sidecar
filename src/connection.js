@@ -59,7 +59,7 @@ export class Connection {
     }
     request_restart(appid) {
         this.socket.send(JSON.stringify({
-            type:'RESTART_APP_REQUEST',
+            type:'DEBUG_RESTART_APP',
             target:appid,
         }))
     }
