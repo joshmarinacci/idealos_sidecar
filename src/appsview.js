@@ -27,9 +27,9 @@ export function AppList({connection}) {
     return <ul>
         {apps.map(app => {
             return <li key={app.id}>{app.name}
-                <button onClick={()=>{
-                    connection.request_restart(app.id)
-                }}>restart</button>
+                <button onClick={()=>connection.request_stop(app.id)}>stop</button>
+                <button onClick={()=>connection.request_start(app.id)}>start</button>
+                {/*<button onClick={()=>connection.request_restart(app.id)}>restart</button>*/}
             </li>
         })}
     </ul>

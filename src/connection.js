@@ -57,6 +57,18 @@ export class Connection {
         if(!this.listeners[type]) this.listeners[type] = []
         this.listeners[type].forEach(l => l(payload))
     }
+    request_stop(appid) {
+        this.socket.send(JSON.stringify({
+            type:'DEBUG_STOP_APP',
+            target:appid,
+        }))
+    }
+    request_start(appid) {
+        this.socket.send(JSON.stringify({
+            type:'DEBUG_START_APP',
+            target:appid,
+        }))
+    }
     request_restart(appid) {
         this.socket.send(JSON.stringify({
             type:'DEBUG_RESTART_APP',
