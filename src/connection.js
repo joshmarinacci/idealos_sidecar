@@ -1,4 +1,5 @@
 import {useEffect} from 'react'
+import {DEBUG, MAKE_apps_list} from 'idealos_schemas/js/debug.js'
 
 const on = (elm, type, cb) => elm.addEventListener(type,cb)
 function log(...args) { console.log(...args) }
@@ -36,7 +37,7 @@ export class Connection {
             // log("incoming message",e)
             let msg = JSON.parse(e.data)
             // log("message arrived",msg)
-            if(msg.type === 'DEBUG_LIST_RESPONSE') {
+            if(msg.type === DEBUG.TYPE_ListAppsResponse) {
                 this.apps = msg.apps
                 this.fire("apps", this.apps)
             }
@@ -74,6 +75,10 @@ export class Connection {
             type:'DEBUG_RESTART_APP',
             target:appid,
         }))
+    }
+    request_apps_list() {
+        let msg = DEBUG.MAKE_ListAppsRequest()
+        this.socket.send(JSON.stringify(msg))
     }
 }
 

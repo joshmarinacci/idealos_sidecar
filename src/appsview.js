@@ -3,10 +3,7 @@ import {useEffect, useState} from 'react'
 export function AppList({connection}) {
     let [apps, set_apps] = useState([])
     useEffect(() => {
-        connection.on("apps", (apps) => {
-            console.log("got apps response",apps)
-            set_apps(apps)
-        })
+        connection.on("apps", (apps) => set_apps(apps))
     }, [connection])
 
     useEffect(() => {
@@ -25,6 +22,7 @@ export function AppList({connection}) {
 
 
     return <ul>
+        <button onClick={()=>connection.request_apps_list()}>refresh</button>
         {apps.map(app => {
             return <li key={app.id}>{app.name}
                 <button onClick={()=>connection.request_stop(app.id)}>stop</button>
