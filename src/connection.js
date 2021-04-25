@@ -1,5 +1,6 @@
 import {useEffect} from 'react'
 import {DEBUG, MAKE_apps_list} from 'idealos_schemas/js/debug.js'
+import {GENERAL} from 'idealos_schemas/js/general.js'
 
 const on = (elm, type, cb) => elm.addEventListener(type,cb)
 function log(...args) { console.log(...args) }
@@ -24,6 +25,7 @@ export class Connection {
             this.connected = true
             this.socket.send(JSON.stringify({type:"DEBUG_LIST", sender:'DEBUG_CLIENT'}))
             this.fire("connect",{})
+            this.send(GENERAL.MAKE_ScreenStart())
         })
         on(this.socket,'error',(e)=> log("error",e))
         on(this.socket, 'close',(e)=>{
@@ -53,32 +55,24 @@ export class Connection {
         if (!this.listeners[type]) this.listeners[type] = []
         this.listeners[type] = this.listeners[type].filter(c => c === cb)
     }
-
     fire(type, payload) {
         if(!this.listeners[type]) this.listeners[type] = []
         this.listeners[type].forEach(l => l(payload))
     }
+    send(msg) {
+        this.socket.send(JSON.stringify(msg))
+    }
     request_stop(appid) {
-        this.socket.send(JSON.stringify({
-            type:'DEBUG_STOP_APP',
-            target:appid,
-        }))
+        this.send(DEBUG.MAKE_StopApp({target:appid}))
     }
     request_start(appid) {
-        this.socket.send(JSON.stringify({
-            type:'DEBUG_START_APP',
-            target:appid,
-        }))
+        this.send(DEBUG.MAKE_StartApp({target:appid}))
     }
     request_restart(appid) {
-        this.socket.send(JSON.stringify({
-            type:'DEBUG_RESTART_APP',
-            target:appid,
-        }))
+        this.send(DEBUG.MAKE_RestartApp({target:appid}))
     }
     request_apps_list() {
-        let msg = DEBUG.MAKE_ListAppsRequest()
-        this.socket.send(JSON.stringify(msg))
+        this.send(DEBUG.MAKE_ListAppsRequest())
     }
 }
 
