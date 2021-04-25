@@ -5,7 +5,7 @@ import {useConnected} from './connection.js'
 export function ConnectStatus({connection}) {
     let [connected, set_connected] = useState(connection.isConnected())
     useConnected(connection,()=> set_connected(connection.isConnected()))
-    return <div>
+    return <div className={'connection-view'}>
         <button
             className={connected?"connected":"disconnected"}
             onClick={() => connection.isConnected()?connection.disconnect():connection.connect()}

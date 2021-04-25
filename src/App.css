@@ -1,3 +1,22 @@
+
+.mainapp {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+}
+
+.connection-view {
+  grid-column: 1;
+}
+.app-list {
+  grid-column: 1;
+}
+.display-view {
+  grid-column: 2;
+}
+.message-view {
+  grid-column: 2;
+}
+
 h3 {
   font-weight: normal;
   background-color: gainsboro;

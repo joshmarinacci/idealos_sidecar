@@ -58,7 +58,7 @@ export function MessageList({connection}) {
         return () => connection.off('message', update_messages)
     },[connection])
 
-    return <div>
+    return <div className={'message-view'}>
         <h3>message list
             <button onClick={()=>update_filter(FILTERS.ALL)}>all</button>
             <button onClick={()=>update_filter(FILTERS.GFX)}>gfx</button>
