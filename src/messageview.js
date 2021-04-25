@@ -1,21 +1,19 @@
 import {useEffect, useState} from 'react'
-import {useConnected} from './connection.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {DEBUG} from 'idealos_schemas/js/debug.js'
 import {GENERAL} from 'idealos_schemas/js/general.js'
 
-function props_array_string(obj) {
+function props_array_string(obj,depth) {
+    if(!depth) depth = 4
+    if(depth <= 1) return "too deep"
     if(!obj) return ""
     if(typeof obj === 'string') return obj.toString()
     if(typeof obj === 'number') return obj.toString()
     // console.log('trying to render',obj)
     let arr = Object.entries(obj)
-    if(arr.length > 5) {
-        return <span>too long</span>
-    }
     return arr.map(([key,val]) => {
-        return <span key={key}><b>{key}</b>:<i>{props_array_string(val)}</i></span>
+        return <span key={key}><b>{key}</b>:<i>{props_array_string(val,depth-1)}</i>&nbsp;</span>
     })
 }
 
@@ -29,7 +27,7 @@ function MessageView({message}) {
         if(message.type === DEBUG.TYPE_RestartApp) return <li className={'debug-action'}>{props_array_string(message)}</li>
         if(message.type === DEBUG.TYPE_StopApp) return <li className={'debug-action'}>{props_array_string(message)}</li>
         if(message.type === DEBUG.TYPE_StartApp) return <li className={'debug-action'}>{props_array_string(message)}</li>
-        if(message.type === DEBUG.TYPE_ListAppsResponse) return <li className={'debug-action'}>{props_array_string(message)}</li>
+        if(message.type === DEBUG.TYPE_ListAppsResponse) return <li className={'debug-action'}>{props_array_string(message,5)}</li>
 
         if(message.type === WINDOWS.TYPE_WindowOpen) return <li className={'window'}>{props_array_string(message)}</li>
         if(message.type === WINDOWS.TYPE_WindowOpenDisplay) return <li className={'window'}>{props_array_string(message)}</li>
@@ -46,7 +44,8 @@ function MessageView({message}) {
 const FILTERS= {
     ALL:'ALL',
     GFX:'GFX',
-    WINDOW:'WINDOW'
+    WINDOW:'WINDOW',
+    APP:'APP'
 }
 
 function is_window_type(msg) {
@@ -68,12 +67,20 @@ function is_graphics_type(msg) {
     )
 }
 
+function is_app_type(msg) {
+    return (
+        msg.type === DEBUG.TYPE_ListAppsResponse ||
+        msg.type === DEBUG.TYPE_ListAppsRequest
+    )
+}
+
 export function MessageList({connection}) {
     let [messages, set_messages] = useState([])
     const [filter, set_filter] = useState(FILTERS.ALL)
 
     if(filter === FILTERS.GFX) messages = messages.filter(is_graphics_type)
     if(filter === FILTERS.WINDOW) messages = messages.filter(is_window_type)
+    if(filter === FILTERS.APP) messages = messages.filter(is_app_type)
 
     const update_messages =()=> {
         set_messages(connection.messages.slice())
@@ -90,6 +97,7 @@ export function MessageList({connection}) {
     return <div className={'message-view'}>
         <h3>message list
             <button onClick={()=>update_filter(FILTERS.ALL)}>all</button>
+            <button onClick={()=>update_filter(FILTERS.APP)}>app</button>
             <button onClick={()=>update_filter(FILTERS.WINDOW)}>win</button>
             <button onClick={()=>update_filter(FILTERS.GFX)}>gfx</button>
         </h3>

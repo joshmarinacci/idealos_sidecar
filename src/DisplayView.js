@@ -167,5 +167,5 @@ export function DisplayView({connection}) {
 
     return <canvas className={'display-view'} style={{
         border: '1px solid black'
-    }} width={400} height={300} ref={canvas}/>
+    }} width={500} height={500} ref={canvas}/>
 }

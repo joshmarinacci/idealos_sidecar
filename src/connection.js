@@ -4,7 +4,7 @@ import {GENERAL} from 'idealos_schemas/js/general.js'
 
 const on = (elm, type, cb) => elm.addEventListener(type,cb)
 function log(...args) { console.log(...args) }
-
+const MAX_MESSAGES = 1000
 export class Connection {
     constructor() {
         this.listeners = {}
@@ -44,8 +44,8 @@ export class Connection {
                 this.fire("apps", this.apps)
             }
             this.messages = this.messages.slice().concat([msg])
-            if(this.messages.length > 100) {
-                this.messages = this.messages.slice(this.messages.length-100)
+            if(this.messages.length > MAX_MESSAGES) {
+                this.messages = this.messages.slice(this.messages.length-MAX_MESSAGES)
             }
             this.fire('message',msg)
         })
