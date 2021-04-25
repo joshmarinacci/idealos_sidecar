@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react'
 import {useConnected} from './connection.js'
+import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 
 function props_array_string(obj) {
     if(!obj) return ""
@@ -28,18 +29,40 @@ function MessageView({message}) {
     </li>
 }
 
-export function MessageList({connection}) {
-    const [messages, set_messages] = useState([])
-    useEffect(() => {
-        let handler = (msg) => set_messages(connection.messages)
-        connection.on("message", handler)
-        return () => connection.off('message', handler)
-    }, [connection])
+const FILTERS= {
+    ALL:'ALL',
+    GFX:'GFX',
+}
 
-    useConnected(connection,()=> set_messages(connection.messages) )
+export function MessageList({connection}) {
+    let [messages, set_messages] = useState([])
+    const [filter, set_filter] = useState(FILTERS.ALL)
+
+    if(filter === FILTERS.GFX) {
+        messages = messages.filter(msg => {
+            if(msg.type === GRAPHICS.TYPE_DrawImage || msg.type === GRAPHICS.TYPE_DrawRect ||
+                msg.type === GRAPHICS.TYPE_DrawPixel) return true
+            return false
+        })
+    }
+
+    const update_messages =()=> {
+        set_messages(connection.messages.slice())
+    }
+    const update_filter = (filter) =>{
+        set_filter(filter)
+        update_messages(filter)
+    }
+    useEffect(() => {
+        connection.on("message", update_messages)
+        return () => connection.off('message', update_messages)
+    },[connection])
 
     return <div>
-        <h3>message list</h3>
+        <h3>message list
+            <button onClick={()=>update_filter(FILTERS.ALL)}>all</button>
+            <button onClick={()=>update_filter(FILTERS.GFX)}>gfx</button>
+        </h3>
         <div className={'message-list'}>
             <ul>{messages.map((msg, i) => <MessageView key={i} message={msg}/>)}</ul>
         </div>
