@@ -10,7 +10,11 @@ function props_array_string(obj) {
     if(typeof obj === 'string') return obj.toString()
     if(typeof obj === 'number') return obj.toString()
     // console.log('trying to render',obj)
-    return Object.entries(obj).map(([key,val]) => {
+    let arr = Object.entries(obj)
+    if(arr.length > 5) {
+        return <span>too long</span>
+    }
+    return arr.map(([key,val]) => {
         return <span key={key}><b>{key}</b>:<i>{props_array_string(val)}</i></span>
     })
 }
@@ -21,6 +25,7 @@ function MessageView({message}) {
         if(message.type === GRAPHICS.TYPE_DrawRect) return ""
         if(message.type === GRAPHICS.TYPE_DrawImage) return ""
         if(message.type === GENERAL.TYPE_Log) return <li className={'log'}>{message.data.map(el => props_array_string(el))}</li>
+
         if(message.type === DEBUG.TYPE_RestartApp) return <li className={'debug-action'}>{props_array_string(message)}</li>
         if(message.type === DEBUG.TYPE_StopApp) return <li className={'debug-action'}>{props_array_string(message)}</li>
         if(message.type === DEBUG.TYPE_StartApp) return <li className={'debug-action'}>{props_array_string(message)}</li>

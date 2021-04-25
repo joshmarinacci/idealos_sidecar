@@ -44,6 +44,9 @@ export class Connection {
                 this.fire("apps", this.apps)
             }
             this.messages = this.messages.slice().concat([msg])
+            if(this.messages.length > 100) {
+                this.messages = this.messages.slice(this.messages.length-100)
+            }
             this.fire('message',msg)
         })
     }

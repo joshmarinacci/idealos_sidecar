@@ -8,12 +8,15 @@ class Manager {
     constructor() {
         this.windows_list = []
         this.windows_map = {}
+        this.SCALE = 2
     }
 
     redraw(c,canvas) {
         if(!c) return
         if(!this.windows_list) return
         //draw background
+        c.save()
+        c.scale(this.SCALE,this.SCALE)
         c.fillStyle = 'white'
         c.fillRect(0,0,canvas.width,canvas.height)
 
@@ -29,13 +32,12 @@ class Manager {
             //draw contents of window
             c.drawImage(win.canvas,win.x,win.y)
         })
+        c.restore()
     }
     init_windows(windows) {
         this.windows_list = []
         this.windows_map = {}
-        Object.values(windows).forEach((win)=>{
-            this.open_window(win)
-        })
+        Object.values(windows).forEach((win)=> this.open_window(win))
     }
 
     draw_pixel(msg) {
@@ -78,7 +80,7 @@ class Manager {
     }
 
     open_window(win) {
-        console.log("new window is",win)
+        // console.log("new window is",win)
         let w = {
             id:win.id,
             owner:win.owner,
@@ -92,7 +94,7 @@ class Manager {
         w.canvas.width = w.width
         w.canvas.height = w.height
         let ctx = w.canvas.getContext('2d')
-        ctx.fillStyle = 'blue'
+        ctx.fillStyle = 'black'
         ctx.fillRect(0,0,w.canvas.width,w.canvas.height)
         // ctx.fillStyle = 'red'
         // ctx.fillRect(0,0,w.canvas.width/2,w.canvas.height/2)
