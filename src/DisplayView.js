@@ -16,6 +16,7 @@ class Manager {
         if(!this.windows_list) return
         //draw background
         c.save()
+        c.imageSmoothingEnabled = false
         c.scale(this.SCALE,this.SCALE)
         c.fillStyle = 'white'
         c.fillRect(0,0,canvas.width,canvas.height)
