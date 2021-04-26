@@ -79,7 +79,7 @@ class Manager {
     }
 
     open_window(win) {
-        // console.log("new window is",win)
+        console.log("new window is",win)
         let w = {
             id:win.id,
             owner:win.owner,
@@ -108,6 +108,7 @@ class Manager {
             console.log("really removing the window",win)
             this.windows_list = this.windows_list.filter(w => w.id !== win.id)
             delete this.windows_map[win.id]
+            console.log('new indows list',this.windows_list,this.windows_map)
         }
     }
 
@@ -117,6 +118,7 @@ class Manager {
         let cursor = new Point((e.clientX-rect.x)/this.SCALE,(e.clientY-rect.y)/this.SCALE)
         let window = this.windows_list.find(win => win.bounds.contains(cursor))
         if(window) {
+            console.log("selected window",window)
             this.send(WINDOWS.MAKE_SetFocusedWindow({window:window.id}))
             this.drag_started = true
             this.drag_window_id = window.id
@@ -189,10 +191,8 @@ export function DisplayView({connection}) {
                 manager.open_window(msg.window)
                 return redraw()
             }
-            if (msg.type === WINDOWS.TYPE_WindowOpen) {
-                manager.open_window(msg)
-                return redraw()
-            }
+            //skip
+            if(msg.type === WINDOWS.TYPE_WindowOpen) return
             if(msg.type === GRAPHICS.TYPE_DrawPixel) {
                 manager.draw_pixel(msg)
                 if(canvas.current) manager.redraw(canvas.current.getContext('2d'),canvas.current)
