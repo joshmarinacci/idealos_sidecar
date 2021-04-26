@@ -8,6 +8,7 @@ class Manager {
         this.windows_list = []
         this.windows_map = {}
         this.SCALE = 2
+        this.drag_started = false
     }
 
     redraw(c,canvas) {
@@ -21,7 +22,6 @@ class Manager {
 
         //for each window
         this.windows_list.forEach(win => {
-            // console.log("drawing window",win)
             //draw chrome around the window
             c.fillStyle = 'cyan'
             c.fillRect(win.x-2,win.y-10,win.width+2+2, win.height+10+2)
@@ -115,16 +115,30 @@ class Manager {
         //if clicked on window or within title bar
         let rect = e.target.getBoundingClientRect();
         let cursor = new Point((e.clientX-rect.x)/this.SCALE,(e.clientY-rect.y)/this.SCALE)
-        console.log("clicked at",cursor)
         let window = this.windows_list.find(win => win.bounds.contains(cursor))
         if(window) {
-            console.log("clicked on the target window",window)
             this.send(WINDOWS.MAKE_SetFocusedWindow({window:window.id}))
+            this.drag_started = true
+            this.drag_window_id = window.id
+            this.drag_offset = new Point(window.bounds.x,window.bounds.y).subtract(cursor)
         }
     }
 
-    mouse_up(e) {
+    mouse_move(e) {
+        if(!this.drag_started) return
+        let rect = e.target.getBoundingClientRect();
+        let cursor = new Point((e.clientX-rect.x)/this.SCALE,(e.clientY-rect.y)/this.SCALE)
+        let window = this.windows_list.find(win => win.id === this.drag_window_id)
+        let off = this.drag_offset.add(cursor)
+        window.x = off.x
+        window.y = off.y
+        window.bounds.x = off.x
+        window.bounds.y = off.y
+    }
 
+    mouse_up(e) {
+        this.drag_started = false
+        this.drag_window_id = ""
     }
 
     setConnection(connection) {
@@ -142,13 +156,21 @@ export function DisplayView({connection}) {
     let canvas = useRef()
 
     function redraw() {
-        if(canvas.current) manager.redraw(canvas.current.getContext('2d'),canvas.current)
+        if(canvas.current) {
+            manager.redraw(canvas.current.getContext('2d'),canvas.current)
+        }
     }
     function mouse_down(e) {
         manager.mouse_down(e)
+        redraw()
+    }
+    function mouse_move(e) {
+        manager.mouse_move(e)
+        redraw()
     }
     function mouse_up(e) {
         manager.mouse_up(e)
+        redraw()
     }
     useEffect(() => {
         connection.on("message", (msg) => {
@@ -199,6 +221,7 @@ export function DisplayView({connection}) {
         border: '1px solid black'
     }} width={500} height={500} ref={canvas}
                    onMouseDown={mouse_down}
+                   onMouseMove={mouse_move}
                    onMouseUp={mouse_up}
     />
 }

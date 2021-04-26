@@ -19,4 +19,17 @@ export class Point {
         this.x = x
         this.y = y
     }
+    subtract(pt2) {
+        return new Point(
+            this.x-pt2.x,
+            this.y - pt2.y,
+        )
+    }
+
+    add(pt) {
+        return new Point(
+            this.x + pt.x,
+            this.y + pt.y,
+        )
+    }
 }
