@@ -1,10 +1,9 @@
 import {useEffect, useRef} from 'react'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
+import {Point, Bounds} from "./math.js"
 
 class Manager {
-
-
     constructor() {
         this.windows_list = []
         this.windows_map = {}
@@ -89,6 +88,7 @@ class Manager {
             x:win.x,
             y:win.y,
             window_type:win.window_type,
+            bounds: new Bounds(win.x,win.y,win.width,win.height),
         }
         w.canvas = document.createElement('canvas')
         w.canvas.width = w.width
@@ -110,14 +110,45 @@ class Manager {
             delete this.windows_map[win.id]
         }
     }
+
+    mouse_down(e) {
+        //if clicked on window or within title bar
+        let rect = e.target.getBoundingClientRect();
+        let cursor = new Point((e.clientX-rect.x)/this.SCALE,(e.clientY-rect.y)/this.SCALE)
+        console.log("clicked at",cursor)
+        let window = this.windows_list.find(win => win.bounds.contains(cursor))
+        if(window) {
+            console.log("clicked on the target window",window)
+            this.send(WINDOWS.MAKE_SetFocusedWindow({window:window.id}))
+        }
+    }
+
+    mouse_up(e) {
+
+    }
+
+    setConnection(connection) {
+        this.connection = connection
+    }
+
+    send(msg) {
+        if(this.connection) this.connection.send(msg)
+    }
 }
 
 const manager = new Manager()
 export function DisplayView({connection}) {
+    manager.setConnection(connection)
     let canvas = useRef()
 
     function redraw() {
         if(canvas.current) manager.redraw(canvas.current.getContext('2d'),canvas.current)
+    }
+    function mouse_down(e) {
+        manager.mouse_down(e)
+    }
+    function mouse_up(e) {
+        manager.mouse_up(e)
     }
     useEffect(() => {
         connection.on("message", (msg) => {
@@ -137,7 +168,6 @@ export function DisplayView({connection}) {
                 return redraw()
             }
             if (msg.type === WINDOWS.TYPE_WindowOpen) {
-                console.log("window open message is",msg)
                 manager.open_window(msg)
                 return redraw()
             }
@@ -167,5 +197,8 @@ export function DisplayView({connection}) {
 
     return <canvas className={'display-view'} style={{
         border: '1px solid black'
-    }} width={500} height={500} ref={canvas}/>
+    }} width={500} height={500} ref={canvas}
+                   onMouseDown={mouse_down}
+                   onMouseUp={mouse_up}
+    />
 }
