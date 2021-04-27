@@ -65,10 +65,8 @@ class Manager {
     close_window(window) {
         let win = this.findWindow(window)
         if(win) {
-            console.log("really removing the window",win)
             this.windows_list = this.windows_list.filter(w => w.id !== win.id)
             delete this.windows_map[win.id]
-            console.log('new indows list',this.windows_list,this.windows_map)
         }
     }
     findWindow(win_id) {
@@ -142,14 +140,21 @@ class Manager {
         let window = this.windows_list.find(win => win.chrome.contains(cursor))
         if(window) {
             if(window.window_type === 'menubar') {
-                console.log("it's the menubar, send mouse to it instead")
-                this.send(INPUT.MAKE_MouseDown({x:cursor.x,y:cursor.y,app:window.owner,window:window.id}))
+                this.send(INPUT.MAKE_MouseDown({
+                    x:cursor.x-window.bounds.x,
+                    y:cursor.y-window.bounds.y,
+                    app:window.owner,
+                    window:window.id
+                }))
                 return
             }
             //if inside windown content
             if(window.bounds.contains(cursor)) {
-                console.log("sending mouse event the window")
-                this.send(INPUT.MAKE_MouseDown({x:cursor.x,y:cursor.y,app:window.owner, window:window.id}))
+                this.send(INPUT.MAKE_MouseDown({
+                    x:cursor.x-window.bounds.x,
+                    y:cursor.y-window.bounds.y,
+                    app:window.owner,
+                    window:window.id}))
                 if(window.id !== this.focused_window && window.window_type !== 'menubar' && window.window_type !== 'menu') {
                     this.send(WINDOWS.MAKE_SetFocusedWindow({window:window.id, target:window.owner}))
                     this.focused_window = window.id
@@ -230,8 +235,12 @@ export function DisplayView({connection}) {
                 return redraw()
             }
             if (msg.type === WINDOWS.TYPE_create_child_window_display) {
-                console.log("opening a child window",msg)
                 manager.open_child_window(msg)
+                return redraw()
+            }
+            if (msg.type === WINDOWS.TYPE_close_child_window_display) {
+                manager.close_window(msg.window)
+                return redraw()
             }
             //skip
             if(msg.type === WINDOWS.TYPE_WindowOpen) return
@@ -247,12 +256,10 @@ export function DisplayView({connection}) {
             }
             if(msg.type === GRAPHICS.TYPE_DrawImage) {
                 manager.draw_image(msg)
-                if(canvas.current) manager.redraw(canvas.current.getContext('2d'),canvas.current)
                 return redraw()
             }
             if(msg.type === WINDOWS.TYPE_window_close) {
                 manager.close_window(msg.window)
-                if(canvas.current) manager.redraw(canvas.current.getContext('2d'),canvas.current)
                 return redraw()
             }
             console.log("got message",msg)

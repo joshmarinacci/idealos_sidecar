@@ -55,8 +55,10 @@ function is_window_type(msg) {
         msg.type === WINDOWS.TYPE_window_refresh_request ||
         msg.type === WINDOWS.TYPE_window_refresh_response ||
         msg.type === WINDOWS.TYPE_WindowOpen ||
-        msg.type === WINDOWS.TYPE_window_close
-    )
+        msg.type === WINDOWS.TYPE_window_close ||
+        msg.type === WINDOWS.TYPE_create_child_window_display ||
+        msg.type === WINDOWS.TYPE_close_child_window_display
+)
 }
 
 function is_graphics_type(msg) {
