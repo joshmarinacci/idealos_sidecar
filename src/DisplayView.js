@@ -139,48 +139,36 @@ class Manager {
         let cursor = new Point((e.clientX-rect.x)/this.SCALE,(e.clientY-rect.y)/this.SCALE)
         let window = this.windows_list.find(win => win.chrome.contains(cursor))
         if(window) {
-            if(window.window_type === 'menubar') {
-                this.send(INPUT.MAKE_MouseDown({
-                    x:cursor.x-window.bounds.x,
-                    y:cursor.y-window.bounds.y,
-                    app:window.owner,
-                    window:window.id
-                }))
-                return
-            }
-            //if inside windown content
+            if(window.window_type === 'menubar') return this.send_mousedown_to_window(cursor,window)
+            if(window.window_type === 'menu') return this.send_mousedown_to_window(cursor,window)
+            //if inside window content
             if(window.bounds.contains(cursor)) {
-                this.send(INPUT.MAKE_MouseDown({
-                    x:cursor.x-window.bounds.x,
-                    y:cursor.y-window.bounds.y,
-                    app:window.owner,
-                    window:window.id}))
-                if(window.id !== this.focused_window && window.window_type !== 'menubar' && window.window_type !== 'menu') {
-                    this.send(WINDOWS.MAKE_SetFocusedWindow({window:window.id, target:window.owner}))
-                    this.focused_window = window.id
-                }
+                this.send_mousedown_to_window(cursor,window)
+                this.set_focused_window(window)
                 return
             }
             //skip types that can be dragged or made the focus
-            if(window.window_type === 'menubar') return
-            if(window.window_type === 'menu') return
-            this.send(WINDOWS.MAKE_SetFocusedWindow({window:window.id}))
-            this.focused_window = window.id
+            this.set_focused_window(window)
             this.drag_started = true
             this.drag_window_id = window.id
             this.drag_offset = new Point(window.bounds.x,window.bounds.y).subtract(cursor)
         }
     }
     mouse_move(e) {
-        if(!this.drag_started) return
         let rect = e.target.getBoundingClientRect();
-        let cursor = new Point((e.clientX-rect.x)/this.SCALE,(e.clientY-rect.y)/this.SCALE)
-        let window = this.windows_list.find(win => win.id === this.drag_window_id)
-        let off = this.drag_offset.add(cursor)
-        window.bounds.x = off.x
-        window.bounds.y = off.y
-        window.chrome.x = window.bounds.x-2
-        window.chrome.y = window.bounds.y-2-10
+        let cursor = new Point((e.clientX - rect.x) / this.SCALE, (e.clientY - rect.y) / this.SCALE)
+        if(this.drag_started) {
+            let window = this.windows_list.find(win => win.id === this.drag_window_id)
+            let off = this.drag_offset.add(cursor)
+            window.bounds.x = off.x
+            window.bounds.y = off.y
+            window.chrome.x = window.bounds.x - 2
+            window.chrome.y = window.bounds.y - 2 - 10
+        } else {
+            //send to first window underneath
+            let window = this.windows_list.find(win => win.bounds.contains(cursor))
+            if(window) return this.send_mousemove_to_window(cursor,window)
+        }
     }
     mouse_up(e) {
         this.drag_started = false
@@ -192,6 +180,31 @@ class Manager {
     }
     send(msg) {
         if(this.connection) this.connection.send(msg)
+    }
+
+    send_mousedown_to_window(cursor, window) {
+        this.send(INPUT.MAKE_MouseDown({
+            x:cursor.x-window.bounds.x,
+            y:cursor.y-window.bounds.y,
+            app:window.owner,
+            window:window.id
+        }))
+    }
+
+    set_focused_window(window) {
+        if(window.id !== this.focused_window && window.window_type !== 'menubar' && window.window_type !== 'menu') {
+            this.send(WINDOWS.MAKE_SetFocusedWindow({window:window.id, target:window.owner}))
+            this.focused_window = window.id
+        }
+    }
+
+    send_mousemove_to_window(cursor, window) {
+        this.send(INPUT.MAKE_MouseMove({
+            x:cursor.x-window.bounds.x,
+            y:cursor.y-window.bounds.y,
+            app:window.owner,
+            window:window.id
+        }))
     }
 }
 
