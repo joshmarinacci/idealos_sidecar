@@ -17,23 +17,40 @@ function props_array_string(obj,depth) {
     })
 }
 
-function MessageView({message}) {
-    if(message.type) {
-        if(message.type === GRAPHICS.TYPE_DrawPixel) return <li>px {message.x},{message.y}, {message.color}</li>
-        if(message.type === GRAPHICS.TYPE_DrawRect) return ""
-        if(message.type === GRAPHICS.TYPE_DrawImage) return ""
-        if(message.type === GENERAL.TYPE_Log) return <li className={'log'}>{message.data.map(el => props_array_string(el))}</li>
+function MessageView({message, repaint, set_repaint}) {
+    const expand = (e) => {
+        message._open = true
+        set_repaint(repaint+1)
+    }
+    if(message._open) {
+        if (message.type) {
+            if (message.type === GRAPHICS.TYPE_DrawPixel) return <li>px {message.x},{message.y}, {message.color}</li>
+            if (message.type === GRAPHICS.TYPE_DrawRect) return ""
+            if (message.type === GRAPHICS.TYPE_DrawImage) return ""
+            if (message.type === GENERAL.TYPE_Log) return <li
+                className={'log'}>{message.data.map(el => props_array_string(el))}</li>
 
-        if(message.type === DEBUG.TYPE_RestartApp) return <li className={'debug-action'}>{props_array_string(message)}</li>
-        if(message.type === DEBUG.TYPE_StopApp) return <li className={'debug-action'}>{props_array_string(message)}</li>
-        if(message.type === DEBUG.TYPE_StartApp) return <li className={'debug-action'}>{props_array_string(message)}</li>
-        if(message.type === DEBUG.TYPE_ListAppsResponse) return <li className={'debug-action'}>{props_array_string(message,5)}</li>
+            if (message.type === DEBUG.TYPE_RestartApp) return <li
+                className={'debug-action'}>{props_array_string(message)}</li>
+            if (message.type === DEBUG.TYPE_StopApp) return <li
+                className={'debug-action'}>{props_array_string(message)}</li>
+            if (message.type === DEBUG.TYPE_StartApp) return <li
+                className={'debug-action'}>{props_array_string(message)}</li>
+            if (message.type === DEBUG.TYPE_ListAppsResponse) return <li
+                className={'debug-action'}>{props_array_string(message, 5)}</li>
 
-        if(message.type === WINDOWS.TYPE_WindowOpen) return <li className={'window'}>{props_array_string(message)}</li>
-        if(message.type === WINDOWS.TYPE_WindowOpenDisplay) return <li className={'window'}>{props_array_string(message)}</li>
-        if(message.type === WINDOWS.TYPE_window_list) return <li className={'window'}>{props_array_string(message)}</li>
-        if(message.type === WINDOWS.TYPE_window_close) return <li className={'window'}>{props_array_string(message)}</li>
-        // console.log("message",message)
+            if (message.type === WINDOWS.TYPE_WindowOpen) return <li
+                className={'window'}>{props_array_string(message)}</li>
+            if (message.type === WINDOWS.TYPE_WindowOpenDisplay) return <li
+                className={'window'}>{props_array_string(message)}</li>
+            if (message.type === WINDOWS.TYPE_window_list) return <li
+                className={'window'}>{props_array_string(message)}</li>
+            if (message.type === WINDOWS.TYPE_window_close) return <li
+                className={'window'}>{props_array_string(message)}</li>
+            // console.log("message",message)
+        }
+    } else {
+        return <li><b onClick={expand}>{message.type}</b></li>
     }
     return <li>
         <i>type</i> <b>{message.type}</b>
@@ -78,6 +95,7 @@ function is_app_type(msg) {
 
 export function MessageList({connection}) {
     let [messages, set_messages] = useState([])
+    let [repaint, set_repaint] = useState(0)
     const [filter, set_filter] = useState(FILTERS.ALL)
 
     if(filter === FILTERS.GFX) messages = messages.filter(is_graphics_type)
@@ -104,7 +122,7 @@ export function MessageList({connection}) {
             <button onClick={()=>update_filter(FILTERS.GFX)}>gfx</button>
         </h3>
         <div className={'message-list'}>
-            <ul>{messages.map((msg, i) => <MessageView key={i} message={msg}/>)}</ul>
+            <ul>{messages.map((msg, i) => <MessageView key={i} message={msg} repaint={repaint} set_repaint={set_repaint}/>)}</ul>
         </div>
     </div>
 }
