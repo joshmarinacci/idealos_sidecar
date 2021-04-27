@@ -2,6 +2,7 @@ import {useEffect, useRef} from 'react'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {Point, Bounds} from "./math.js"
+import {INPUT} from 'idealos_schemas/js/input.js'
 
 class Manager {
     constructor() {
@@ -9,6 +10,7 @@ class Manager {
         this.windows_map = {}
         this.SCALE = 2
         this.drag_started = false
+        this.focused_window = ""
     }
 
     redraw(c,canvas) {
@@ -23,14 +25,18 @@ class Manager {
 
         //for each window
         this.windows_list.forEach(win => {
+            let chrome = win.chrome
             //draw chrome around the window
             c.fillStyle = 'cyan'
-            c.fillRect(win.x-2,win.y-10,win.width+2+2, win.height+10+2)
+            if(win.id === this.focused_window) {
+                c.fillStyle = 'red'
+            }
+            c.fillRect(chrome.x,chrome.y,chrome.width, chrome.height)
             //draw bg of window
             c.fillStyle = 'white'
-            c.fillRect(win.x,win.y,win.width,win.height)
+            c.fillRect(win.bounds.x,win.bounds.y,win.bounds.width,win.bounds.height)
             //draw contents of window
-            c.drawImage(win.canvas,win.x,win.y)
+            c.drawImage(win.canvas,win.bounds.x,win.bounds.y)
         })
         c.restore()
     }
@@ -81,19 +87,20 @@ class Manager {
 
     open_window(win) {
         console.log("new window is",win)
+        let keys = ['id','x','y','width','height']
+        keys.forEach(key => {
+            if(!win.hasOwnProperty(key)) throw new Error(`Missing window.${key}`)
+        })
         let w = {
             id:win.id,
             owner:win.owner,
-            width:win.width,
-            height:win.height,
-            x:win.x,
-            y:win.y,
             window_type:win.window_type,
             bounds: new Bounds(win.x,win.y,win.width,win.height),
+            chrome:new Bounds(win.x-2,win.y-2-10,win.width+2+2,win.height+2+10+2),
         }
         w.canvas = document.createElement('canvas')
-        w.canvas.width = w.width
-        w.canvas.height = w.height
+        w.canvas.width = w.bounds.width
+        w.canvas.height = w.bounds.height
         let ctx = w.canvas.getContext('2d')
         ctx.fillStyle = 'black'
         ctx.fillRect(0,0,w.canvas.width,w.canvas.height)
@@ -117,10 +124,22 @@ class Manager {
         //if clicked on window or within title bar
         let rect = e.target.getBoundingClientRect();
         let cursor = new Point((e.clientX-rect.x)/this.SCALE,(e.clientY-rect.y)/this.SCALE)
-        let window = this.windows_list.find(win => win.bounds.contains(cursor))
+        let window = this.windows_list.find(win => win.chrome.contains(cursor))
         if(window) {
             console.log("selected window",window)
+            if(window.window_type === 'menubar') {
+                console.log("it's the menubar, send mouse to it instead")
+                this.send(INPUT.MAKE_MouseDown({x:cursor.x,y:cursor.y,target:window.owner}))
+                return
+            }
+            //if inside windown content
+            if(window.bounds.contains(cursor)) {
+                console.log("sending mouse event the window")
+                this.send(INPUT.MAKE_MouseDown({x:cursor.x,y:cursor.y,target:window.owner}))
+                return
+            }
             this.send(WINDOWS.MAKE_SetFocusedWindow({window:window.id}))
+            this.focused_window = window.id
             this.drag_started = true
             this.drag_window_id = window.id
             this.drag_offset = new Point(window.bounds.x,window.bounds.y).subtract(cursor)
@@ -133,10 +152,10 @@ class Manager {
         let cursor = new Point((e.clientX-rect.x)/this.SCALE,(e.clientY-rect.y)/this.SCALE)
         let window = this.windows_list.find(win => win.id === this.drag_window_id)
         let off = this.drag_offset.add(cursor)
-        window.x = off.x
-        window.y = off.y
         window.bounds.x = off.x
         window.bounds.y = off.y
+        window.chrome.x = window.bounds.x-2
+        window.chrome.y = window.bounds.y-2-10
     }
 
     mouse_up(e) {

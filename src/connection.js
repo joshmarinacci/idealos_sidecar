@@ -4,7 +4,7 @@ import {GENERAL} from 'idealos_schemas/js/general.js'
 
 const on = (elm, type, cb) => elm.addEventListener(type,cb)
 function log(...args) { console.log(...args) }
-const MAX_MESSAGES = 1000
+const MAX_MESSAGES = 100
 export class Connection {
     constructor() {
         this.listeners = {}
