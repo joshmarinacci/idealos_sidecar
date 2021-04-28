@@ -4,6 +4,11 @@ import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {Point, Bounds} from "./math.js"
 import {INPUT} from 'idealos_schemas/js/input.js'
 
+const settings = {
+    window_name:true,
+    window_size:true,
+}
+
 class Manager {
     constructor() {
         this.windows_list = []
@@ -72,8 +77,9 @@ class Manager {
     findWindow(win_id) {
         return this.windows_map[win_id]
     }
-    redraw(c,canvas) {
+    redraw(c,canvas,settings) {
         if(!c) return
+        if(!settings) return
         if(!this.windows_list) return
         //draw background
         c.save()
@@ -96,6 +102,35 @@ class Manager {
             c.fillRect(win.bounds.x,win.bounds.y,win.bounds.width,win.bounds.height)
             //draw contents of window
             c.drawImage(win.canvas,win.bounds.x,win.bounds.y)
+
+            if(settings.window_name) {
+                c.save()
+                let name = win.owner + ":" + win.id
+                c.translate(win.bounds.x+win.bounds.width, win.bounds.y+win.bounds.height)
+                c.scale(0.7,0.7)
+                c.font = 'plain 16px sans-serif'
+                let metrics = c.measureText(name)
+                c.translate(-metrics.width,-10)
+                c.fillStyle = 'white'
+                c.fillRect(0,0,metrics.width,20)
+                c.fillStyle = 'black'
+                c.fillText(name,0,10)
+                c.restore()
+            }
+            if(settings.window_size) {
+                c.save()
+                let name = `${win.bounds.x},${win.bounds.y} ${win.bounds.width}x${win.bounds.height}`
+                c.translate(win.bounds.x+win.bounds.width, win.bounds.y+win.bounds.height)
+                c.scale(0.7,0.7)
+                c.font = 'plain 16px sans-serif'
+                let metrics = c.measureText(name)
+                c.translate(-metrics.width,-10)
+                c.fillStyle = 'white'
+                c.fillRect(0,0,metrics.width,20)
+                c.fillStyle = 'black'
+                c.fillText(name,0,10)
+                c.restore()
+            }
         })
         c.restore()
     }
@@ -190,14 +225,12 @@ class Manager {
             window:window.id
         }))
     }
-
     set_focused_window(window) {
         if(window.id !== this.focused_window && window.window_type !== 'menubar' && window.window_type !== 'menu') {
             this.send(WINDOWS.MAKE_SetFocusedWindow({window:window.id, target:window.owner}))
             this.focused_window = window.id
         }
     }
-
     send_mousemove_to_window(cursor, window) {
         this.send(INPUT.MAKE_MouseMove({
             x:cursor.x-window.bounds.x,
@@ -209,15 +242,26 @@ class Manager {
 }
 
 const manager = new Manager()
+
+function HBox({children}) {
+    return <div className={'hbox'}>{children}</div>
+}
+
 export function DisplayView({connection}) {
     manager.setConnection(connection)
     let canvas = useRef()
 
+
     function redraw() {
         if(canvas.current) {
-            manager.redraw(canvas.current.getContext('2d'),canvas.current)
+            manager.redraw(canvas.current.getContext('2d'),canvas.current,settings)
         }
     }
+    function toggle_prop(name) {
+        settings[name] = !settings[name]
+        redraw()
+    }
+
     function mouse_down(e) {
         manager.mouse_down(e)
         redraw()
@@ -279,11 +323,16 @@ export function DisplayView({connection}) {
         })
     }, [connection])
 
-    return <canvas className={'display-view'} style={{
+    return <div>
+        <HBox>
+            <button onClick={()=>toggle_prop("window_name")}>name</button>
+            <button onClick={()=>toggle_prop("window_size")}>size</button>
+        </HBox>
+        <canvas className={'display-view'} style={{
         border: '1px solid black'
     }} width={500} height={500} ref={canvas}
                    onMouseDown={mouse_down}
                    onMouseMove={mouse_move}
                    onMouseUp={mouse_up}
-    />
+    /></div>
 }
