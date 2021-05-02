@@ -1,7 +1,7 @@
 
 .mainapp {
   display: grid;
-  grid-template-columns: 200px 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 3rem 1fr;
 }
 
@@ -78,4 +78,11 @@ button.disconnected {
 }
 button.connected {
   background-color: lightgreen;
+}
+
+
+.app-list {
+  border: 1px solid #444;
+  list-style: none;
+  padding:0.5rem;
 }

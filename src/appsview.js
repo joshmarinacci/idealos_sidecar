@@ -1,5 +1,23 @@
 import {useEffect, useState} from 'react'
 
+function AppToggleButton({app, connection}) {
+    const [running, set_running] = useState(app.running)
+    let action_label = running?"stop":"start"
+    const toggle = () => {
+        if(app.running) {
+            connection.request_stop(app.id)
+            set_running(false)
+        } else {
+            connection.request_start(app.id)
+            set_running(true)
+        }
+    }
+    return <div>
+        <label>{app.name}</label>
+        <button onClick={toggle}>{action_label}</button>
+    </div>
+}
+
 export function AppList({connection}) {
     let [apps, set_apps] = useState([])
     useEffect(() => {
@@ -24,10 +42,8 @@ export function AppList({connection}) {
     return <ul className={'app-list'}>
         <button onClick={()=>connection.request_apps_list()}>refresh</button>
         {apps.map(app => {
-            return <li key={app.id}>{app.name}
-                <button onClick={()=>connection.request_stop(app.id)}>stop</button>
-                <button onClick={()=>connection.request_start(app.id)}>start</button>
-                {/*<button onClick={()=>connection.request_restart(app.id)}>restart</button>*/}
+            return <li key={app.id}>
+                <AppToggleButton app={app} connection={connection}/>
             </li>
         })}
     </ul>
