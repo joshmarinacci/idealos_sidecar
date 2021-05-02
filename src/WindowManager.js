@@ -7,8 +7,15 @@ class Win {
         this.id = opts.id
         this.owner = opts.owner
         this.window_type = opts.window_type
+        this.parent = opts.parent
         this.bounds = opts.bounds
         this.chrome = opts.chrome
+        this.canvas = document.createElement('canvas')
+        this.canvas.width = this.bounds.width
+        this.canvas.height = this.bounds.height
+        let ctx = this.canvas.getContext('2d')
+        ctx.fillStyle = 'black'
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
     }
 }
 
@@ -40,38 +47,22 @@ export class Manager {
             bounds: new Bounds(win.x, win.y, win.width, win.height),
             chrome: new Bounds(win.x - 2, win.y - 2 - 10, win.width + 2 + 2, win.height + 2 + 10 + 2)
         })
-        w.canvas = document.createElement('canvas')
-        w.canvas.width = w.bounds.width
-        w.canvas.height = w.bounds.height
-        let ctx = w.canvas.getContext('2d')
-        ctx.fillStyle = 'black'
-        ctx.fillRect(0, 0, w.canvas.width, w.canvas.height)
-        // ctx.fillStyle = 'red'
-        // ctx.fillRect(0,0,w.canvas.width/2,w.canvas.height/2)
         this.windows_list.push(w)
         this.windows_map[w.id] = w
     }
 
     open_child_window(msg) {
         let win = msg.window
-        let w = {
+        let w = new Win({
             id: win.id,
             owner: win.owner,
             parent: msg.parent,
             window_type: win.window_type,
             bounds: new Bounds(win.x, win.y, win.width, win.height),
             chrome: new Bounds(win.x - 2, win.y - 2 - 10, win.width + 2 + 2, win.height + 2 + 10 + 2)
-        }
-        console.log("new child window", w)
-        w.canvas = document.createElement('canvas')
-        w.canvas.width = w.bounds.width
-        w.canvas.height = w.bounds.height
-        let ctx = w.canvas.getContext('2d')
-        ctx.fillStyle = 'red'
-        ctx.fillRect(0, 0, w.canvas.width, w.canvas.height)
+        })
         this.windows_list.push(w)
         this.windows_map[w.id] = w
-
     }
 
     close_window(window) {
@@ -90,6 +81,7 @@ export class Manager {
         if (!c) return
         if (!settings) return
         if (!this.windows_list) return
+
         //draw background
         c.save()
         c.imageSmoothingEnabled = false
@@ -99,49 +91,9 @@ export class Manager {
 
         //for each window
         this.windows_list.forEach(win => {
-            let chrome = win.chrome
-            //draw chrome around the window
-            if (win.window_type === 'plain') {
-                c.fillStyle = 'cyan'
-                if (win.id === this.focused_window) c.fillStyle = 'red'
-                c.fillRect(chrome.x, chrome.y, chrome.width, chrome.height)
-            }
-            //draw bg of window
-            c.fillStyle = 'white'
-            c.fillRect(win.bounds.x, win.bounds.y, win.bounds.width, win.bounds.height)
-            //draw contents of window
-            c.drawImage(win.canvas, win.bounds.x, win.bounds.y)
-
-            if (settings.window_name) {
-                c.save()
-                let name = win.owner + ":" + win.id
-                c.translate(win.bounds.x + win.bounds.width, win.bounds.y + win.bounds.height)
-                c.scale(0.7, 0.7)
-                c.font = 'plain 16px sans-serif'
-                let metrics = c.measureText(name)
-                c.translate(-metrics.width, -10)
-                c.fillStyle = 'white'
-                c.fillRect(0, 0, metrics.width, 20)
-                c.fillStyle = 'black'
-                c.fillText(name, 0, 10)
-                c.restore()
-            }
-            if (settings.window_size) {
-                c.save()
-                let name = `${win.bounds.x},${win.bounds.y} ${win.bounds.width}x${win.bounds.height}`
-                c.translate(win.bounds.x + win.bounds.width, win.bounds.y + win.bounds.height)
-                c.scale(0.7, 0.7)
-                c.font = 'plain 16px sans-serif'
-                let metrics = c.measureText(name)
-                c.translate(-metrics.width, -10)
-                c.fillStyle = 'white'
-                c.fillRect(0, 0, metrics.width, 20)
-                c.fillStyle = 'black'
-                c.fillText(name, 0, 10)
-                c.restore()
-            }
+            this.draw_window(c,win)
+            this.draw_window_overlays(c,win,settings)
         })
-
 
         this.draw_cursor_coords(c)
         c.restore()
@@ -273,5 +225,54 @@ export class Manager {
         c.strokeStyle = 'black'
         c.strokeRect(0, 0, 50, 15)
         c.restore()
+    }
+
+    draw_window(c,win) {
+        //draw chrome around the window
+        if (win.window_type === 'plain') {
+            let chrome = win.chrome
+            c.fillStyle = 'cyan'
+            if (win.id === this.focused_window) c.fillStyle = 'red'
+            c.fillRect(chrome.x, chrome.y, chrome.width, chrome.height)
+        }
+
+        //draw bg of window
+        c.fillStyle = 'white'
+        c.fillRect(win.bounds.x, win.bounds.y, win.bounds.width, win.bounds.height)
+        //draw contents of window
+        c.drawImage(win.canvas, win.bounds.x, win.bounds.y)
+    }
+    draw_window_overlays(c,win,settings) {
+
+        if (settings.window_name) {
+            c.save()
+            let name = win.owner + ":" + win.id
+            c.translate(win.bounds.x + win.bounds.width, win.bounds.y + win.bounds.height)
+            c.scale(0.7, 0.7)
+            c.font = 'plain 16px sans-serif'
+            let metrics = c.measureText(name)
+            c.translate(-metrics.width, -10)
+            c.fillStyle = 'white'
+            c.fillRect(0, 0, metrics.width, 20)
+            c.fillStyle = 'black'
+            c.fillText(name, 0, 10)
+            c.restore()
+        }
+
+        if (settings.window_size) {
+            c.save()
+            let name = `${win.bounds.x},${win.bounds.y} ${win.bounds.width}x${win.bounds.height}`
+            c.translate(win.bounds.x + win.bounds.width, win.bounds.y + win.bounds.height)
+            c.scale(0.7, 0.7)
+            c.font = 'plain 16px sans-serif'
+            let metrics = c.measureText(name)
+            c.translate(-metrics.width, -10)
+            c.fillStyle = 'white'
+            c.fillRect(0, 0, metrics.width, 20)
+            c.fillStyle = 'black'
+            c.fillText(name, 0, 10)
+            c.restore()
+        }
+
     }
 }
