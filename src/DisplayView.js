@@ -13,6 +13,14 @@ const manager = new Manager()
 function HBox({children}) {
     return <div className={'hbox'}>{children}</div>
 }
+function VBox({children}) {
+    return <div className={'vbox'}>{children}</div>
+}
+
+function Spacer() {
+    return <span className={"spacer"}/>
+}
+
 
 export function DisplayView({connection}) {
     manager.setConnection(connection)
@@ -41,6 +49,19 @@ export function DisplayView({connection}) {
         manager.mouse_up(e)
         redraw()
     }
+
+    function screenshot_desktop() {
+        if(canvas.current) {
+            let data = canvas.current.toDataURL('image/png')
+            const downloadAnchorNode = document.createElement('a')
+            downloadAnchorNode.setAttribute("href",     data);
+            downloadAnchorNode.setAttribute("download", 'screenshot.png');
+            document.body.appendChild(downloadAnchorNode); // required for firefox
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+    }
+
     useEffect(() => {
         connection.on("message", (msg) => {
             if (msg.type === WINDOWS.TYPE_window_list) {
@@ -94,6 +115,9 @@ export function DisplayView({connection}) {
         <HBox>
             <button onClick={()=>toggle_prop("window_name")}>name</button>
             <button onClick={()=>toggle_prop("window_size")}>size</button>
+            <button onClick={()=>toggle_prop("cursor_pos")}>cursor</button>
+            <Spacer/>
+            <button onClick={()=>screenshot_desktop()}>screenshot</button>
         </HBox>
         <canvas className={'display-view'} style={{
         border: '1px solid black'

@@ -86,3 +86,15 @@ button.connected {
   list-style: none;
   padding:0.5rem;
 }
+
+.hbox {
+  display: flex;
+  flex-direction: row;
+}
+.vbox {
+  display: flex;
+  flex-direction: column;
+}
+.spacer {
+  flex:1.0;
+}
