@@ -2,6 +2,7 @@ import {Bounds, Point} from './math.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 
+const CLOSE_INSET = 5
 class Win {
     constructor(opts) {
         this.id = opts.id
@@ -10,6 +11,7 @@ class Win {
         this.parent = opts.parent
         this.bounds = opts.bounds
         this.chrome = opts.chrome
+        this.close_button_bounds = new Bounds(this.chrome.width-CLOSE_INSET-1,1,CLOSE_INSET,CLOSE_INSET)
         this.canvas = document.createElement('canvas')
         this.canvas.width = this.bounds.width
         this.canvas.height = this.bounds.height
@@ -65,8 +67,8 @@ export class Manager {
         this.windows_map[w.id] = w
     }
 
-    close_window(window) {
-        let win = this.findWindow(window)
+    close_window(winid) {
+        let win = this.findWindow(winid)
         if (win) {
             this.windows_list = this.windows_list.filter(w => w.id !== win.id)
             delete this.windows_map[win.id]
@@ -143,10 +145,16 @@ export class Manager {
         if (window) {
             if (window.window_type === 'menubar') return this.send_mousedown_to_window(cursor, window)
             if (window.window_type === 'menu') return this.send_mousedown_to_window(cursor, window)
-            //if inside window content
+            //if inside window content send to window
             if (window.bounds.contains(cursor)) {
                 this.send_mousedown_to_window(cursor, window)
                 this.set_focused_window(window)
+                return
+            }
+            //if inside close button
+            let pt2 = window.chrome.translate_into(cursor)
+            if(window.close_button_bounds.contains(pt2)) {
+                this.send_close_window(window)
                 return
             }
             //skip types that can be dragged or made the focus
@@ -226,7 +234,6 @@ export class Manager {
         c.strokeRect(0, 0, 50, 15)
         c.restore()
     }
-
     draw_window(c,win) {
         //draw chrome around the window
         if (win.window_type === 'plain') {
@@ -234,6 +241,10 @@ export class Manager {
             c.fillStyle = 'cyan'
             if (win.id === this.focused_window) c.fillStyle = 'red'
             c.fillRect(chrome.x, chrome.y, chrome.width, chrome.height)
+
+            c.fillStyle = 'black'
+            let button = win.close_button_bounds
+            c.fillRect(chrome.x+button.x, chrome.y+button.y,button.width,button.height)
         }
 
         //draw bg of window
@@ -274,5 +285,12 @@ export class Manager {
             c.restore()
         }
 
+    }
+
+    send_close_window(win) {
+        this.send(WINDOWS.MAKE_window_close_request({
+            target:win.owner,
+            window:win.id
+        }))
     }
 }

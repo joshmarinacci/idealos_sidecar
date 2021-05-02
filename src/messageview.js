@@ -46,7 +46,9 @@ function MessageView({message, repaint, set_repaint}) {
                 className={'window'}>{props_array_string(message)}</li>
             if (message.type === WINDOWS.TYPE_window_list) return <li
                 className={'window'}>{props_array_string(message)}</li>
-            if (message.type === WINDOWS.TYPE_window_close) return <li
+            if (message.type === WINDOWS.TYPE_window_close_request) return <li
+                className={'window'}>{props_array_string(message)}</li>
+            if (message.type === WINDOWS.TYPE_window_close_response) return <li
                 className={'window'}>{props_array_string(message)}</li>
             // console.log("message",message)
         }
@@ -74,7 +76,8 @@ function is_window_type(msg) {
         msg.type === WINDOWS.TYPE_window_refresh_request ||
         msg.type === WINDOWS.TYPE_window_refresh_response ||
         msg.type === WINDOWS.TYPE_WindowOpen ||
-        msg.type === WINDOWS.TYPE_window_close ||
+        msg.type === WINDOWS.TYPE_window_close_request ||
+        msg.type === WINDOWS.TYPE_window_close_response ||
         msg.type === WINDOWS.TYPE_create_child_window_display ||
         msg.type === WINDOWS.TYPE_close_child_window_display
 )

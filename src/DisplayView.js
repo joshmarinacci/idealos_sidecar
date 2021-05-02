@@ -82,7 +82,7 @@ export function DisplayView({connection}) {
                 manager.draw_image(msg)
                 return redraw()
             }
-            if(msg.type === WINDOWS.TYPE_window_close) {
+            if(msg.type === WINDOWS.TYPE_window_close_response) {
                 manager.close_window(msg.window)
                 return redraw()
             }

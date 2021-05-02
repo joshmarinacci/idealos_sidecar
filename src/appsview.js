@@ -42,7 +42,7 @@ export function AppList({connection}) {
     return <ul className={'app-list'}>
         <button onClick={()=>connection.request_apps_list()}>refresh</button>
         {apps.map(app => {
-            return <li key={app.id}>
+            return <li key={app.id+"_"+app.running}>
                 <AppToggleButton app={app} connection={connection}/>
             </li>
         })}

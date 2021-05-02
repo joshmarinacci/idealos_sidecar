@@ -12,6 +12,9 @@ export class Bounds {
         if(pt.y > this.y+this.height) return false
         return true
     }
+    translate_into(pt) {
+        return new Point(pt.x-this.x,pt.y-this.y)
+    }
 }
 
 export class Point {
