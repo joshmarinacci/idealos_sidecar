@@ -43,10 +43,7 @@ export class Connection {
                 this.apps = msg.apps
                 this.fire("apps", this.apps)
             }
-            this.messages = this.messages.slice().concat([msg])
-            if(this.messages.length > MAX_MESSAGES) {
-                this.messages = this.messages.slice(this.messages.length-MAX_MESSAGES)
-            }
+            this.appendMessage(msg)
             this.fire('message',msg)
         })
     }
@@ -63,6 +60,7 @@ export class Connection {
         this.listeners[type].forEach(l => l(payload))
     }
     send(msg) {
+        this.appendMessage(msg)
         this.socket.send(JSON.stringify(msg))
     }
     request_stop(appid) {
@@ -76,6 +74,13 @@ export class Connection {
     }
     request_apps_list() {
         this.send(DEBUG.MAKE_ListAppsRequest())
+    }
+
+    appendMessage(msg) {
+        this.messages = this.messages.slice().concat([msg])
+        if(this.messages.length > MAX_MESSAGES) {
+            this.messages = this.messages.slice(this.messages.length-MAX_MESSAGES)
+        }
     }
 }
 

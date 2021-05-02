@@ -3,6 +3,7 @@ import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {DEBUG} from 'idealos_schemas/js/debug.js'
 import {GENERAL} from 'idealos_schemas/js/general.js'
+import {INPUT} from 'idealos_schemas/js/input.js'
 
 function props_array_string(obj,depth) {
     if(!depth) depth = 4
@@ -62,7 +63,8 @@ const FILTERS= {
     ALL:'ALL',
     GFX:'GFX',
     WINDOW:'WINDOW',
-    APP:'APP'
+    APP:'APP',
+    INPUT:'INPUT'
 }
 
 function is_window_type(msg) {
@@ -93,6 +95,17 @@ function is_app_type(msg) {
     )
 }
 
+function is_input_type(msg) {
+    return (
+        msg.type === INPUT.TYPE_Action ||
+        // msg.type === INPUT.TYPE_MouseMove ||
+        msg.type === INPUT.TYPE_MouseDown ||
+        msg.type === INPUT.TYPE_MouseUp ||
+        msg.type === INPUT.TYPE_KeyboardDown ||
+        msg.type === INPUT.TYPE_KeyboardUp
+    )
+}
+
 export function MessageList({connection}) {
     let [messages, set_messages] = useState([])
     let [repaint, set_repaint] = useState(0)
@@ -101,6 +114,7 @@ export function MessageList({connection}) {
     if(filter === FILTERS.GFX) messages = messages.filter(is_graphics_type)
     if(filter === FILTERS.WINDOW) messages = messages.filter(is_window_type)
     if(filter === FILTERS.APP) messages = messages.filter(is_app_type)
+    if(filter === FILTERS.INPUT) messages = messages.filter(is_input_type)
 
     const update_messages =()=> {
         set_messages(connection.messages.slice())
@@ -120,6 +134,7 @@ export function MessageList({connection}) {
             <button onClick={()=>update_filter(FILTERS.APP)}>app</button>
             <button onClick={()=>update_filter(FILTERS.WINDOW)}>win</button>
             <button onClick={()=>update_filter(FILTERS.GFX)}>gfx</button>
+            <button onClick={()=>update_filter(FILTERS.INPUT)}>input</button>
         </h3>
         <div className={'message-list'}>
             <ul>{messages.map((msg, i) => <MessageView key={i} message={msg} repaint={repaint} set_repaint={set_repaint}/>)}</ul>
