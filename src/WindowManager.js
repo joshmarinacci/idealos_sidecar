@@ -31,6 +31,13 @@ export class Manager {
         this.cursor = new Point(0, 0)
     }
 
+    get_scale() {
+        return this.SCALE
+    }
+    set_scale(s) {
+        this.SCALE = s
+    }
+
     init_windows(windows) {
         this.windows_list = []
         this.windows_map = {}

@@ -1,4 +1,4 @@
-import {useEffect, useRef} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {Manager} from './WindowManager.js'
@@ -26,6 +26,8 @@ export function DisplayView({connection}) {
     manager.setConnection(connection)
     let canvas = useRef()
 
+    const [zoom,set_zoom] = useState(3)
+    manager.set_scale(Math.pow(2,zoom))
 
     function redraw() {
         if(canvas.current) {
@@ -49,6 +51,14 @@ export function DisplayView({connection}) {
         manager.mouse_up(e)
         redraw()
     }
+
+    function zoom_in() {
+        set_zoom(zoom+1)
+    }
+    function zoom_out() {
+        set_zoom(zoom-1)
+    }
+
 
     function screenshot_desktop() {
         if(canvas.current) {
@@ -118,6 +128,9 @@ export function DisplayView({connection}) {
             <button onClick={()=>toggle_prop("cursor_pos")}>cursor</button>
             <Spacer/>
             <button onClick={()=>screenshot_desktop()}>screenshot</button>
+            <button onClick={()=>zoom_in()}>+</button>
+            <label>{Math.pow(2,zoom)+"00%"}</label>
+            <button onClick={()=>zoom_out()}>-</button>
         </HBox>
         <canvas className={'display-view'} style={{
         border: '1px solid black'
