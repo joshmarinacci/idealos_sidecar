@@ -151,6 +151,7 @@ export class Manager {
         let window = this.windows_list.find(win => win.chrome.contains(cursor))
         if (window) {
             if (window.window_type === 'menubar') return this.send_mousedown_to_window(cursor, window)
+            if (window.window_type === 'dock') return this.send_mousedown_to_window(cursor, window)
             if (window.window_type === 'menu') return this.send_mousedown_to_window(cursor, window)
             //if inside window content send to window
             if (window.bounds.contains(cursor)) {
@@ -213,7 +214,7 @@ export class Manager {
     }
 
     set_focused_window(window) {
-        if (window.id !== this.focused_window && window.window_type !== 'menubar' && window.window_type !== 'menu') {
+        if (window.id !== this.focused_window && window.window_type !== 'menubar' && window.window_type !== 'menu' && window.window_type !== 'dock') {
             this.send(WINDOWS.MAKE_SetFocusedWindow({window: window.id, target: window.owner}))
             this.focused_window = window.id
         }

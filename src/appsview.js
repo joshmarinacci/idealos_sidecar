@@ -4,7 +4,7 @@ function AppToggleButton({app, connection}) {
     const [running, set_running] = useState(app.running)
     let action_label = running?"stop":"start"
     const toggle = () => {
-        if(app.running) {
+        if(running) {
             connection.request_stop(app.id)
             set_running(false)
         } else {

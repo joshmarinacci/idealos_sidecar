@@ -94,7 +94,12 @@ function is_graphics_type(msg) {
 function is_app_type(msg) {
     return (
         msg.type === DEBUG.TYPE_ListAppsResponse ||
-        msg.type === DEBUG.TYPE_ListAppsRequest
+        msg.type === DEBUG.TYPE_ListAppsRequest ||
+        msg.type === DEBUG.TYPE_StartApp ||
+        msg.type === DEBUG.TYPE_StartAppByName ||
+        msg.type === DEBUG.TYPE_StopApp ||
+        msg.type === DEBUG.TYPE_AppStarted ||
+        msg.type === DEBUG.TYPE_AppStopped
     )
 }
 

@@ -26,7 +26,7 @@ export function DisplayView({connection}) {
     manager.setConnection(connection)
     let canvas = useRef()
 
-    const [zoom,set_zoom] = useState(3)
+    const [zoom,set_zoom] = useState(1)
     manager.set_scale(Math.pow(2,zoom))
 
     function redraw() {
