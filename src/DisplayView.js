@@ -16,6 +16,7 @@ class Manager {
         this.SCALE = 2
         this.drag_started = false
         this.focused_window = ""
+        this.cursor = new Point(0,0)
     }
     init_windows(windows) {
         this.windows_list = []
@@ -132,6 +133,9 @@ class Manager {
                 c.restore()
             }
         })
+
+
+        this.draw_cursor_coords(c)
         c.restore()
     }
     draw_pixel(msg) {
@@ -192,6 +196,7 @@ class Manager {
     mouse_move(e) {
         let rect = e.target.getBoundingClientRect();
         let cursor = new Point((e.clientX - rect.x) / this.SCALE, (e.clientY - rect.y) / this.SCALE)
+        this.cursor = cursor
         if(this.drag_started) {
             let window = this.windows_list.find(win => win.id === this.drag_window_id)
             let off = this.drag_offset.add(cursor)
@@ -238,6 +243,20 @@ class Manager {
             app:window.owner,
             window:window.id
         }))
+    }
+
+    draw_cursor_coords(c) {
+        c.save()
+        c.translate(this.cursor.x+10,this.cursor.y-10)
+        c.scale(0.7,0.7)
+        c.fillStyle = 'white'
+        c.fillRect(0,0,50,15)
+        c.fillStyle = 'black'
+        c.font = 'plain 5px sans-serif'
+        c.fillText(Math.floor(this.cursor.x) + "," + Math.floor(this.cursor.y), 2, 13)
+        c.strokeStyle = 'black'
+        c.strokeRect(0,0,50,15)
+        c.restore()
     }
 }
 
