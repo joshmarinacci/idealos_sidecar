@@ -194,6 +194,16 @@ export class Manager {
     mouse_up(e) {
         this.drag_started = false
         this.drag_window_id = ""
+        this.drag_offset = null
+        let rect = e.target.getBoundingClientRect()
+        let cursor = new Point((e.clientX - rect.x) / this.SCALE, (e.clientY - rect.y) / this.SCALE)
+        let window = this.windows_list.find(win => win.chrome.contains(cursor))
+        if (window) {
+            if (window.window_type === 'menubar') return this.send_mouseup_to_window(cursor, window)
+            if (window.window_type === 'dock') return this.send_mousedup_to_window(cursor, window)
+            if (window.window_type === 'menu') return this.send_mousedup_to_window(cursor, window)
+            if (window.bounds.contains(cursor)) return this.send_mouseup_to_window(cursor, window)
+        }
     }
 
     setConnection(connection) {
@@ -206,6 +216,15 @@ export class Manager {
 
     send_mousedown_to_window(cursor, window) {
         this.send(INPUT.MAKE_MouseDown({
+            x: cursor.x - window.bounds.x,
+            y: cursor.y - window.bounds.y,
+            app: window.owner,
+            window: window.id
+        }))
+    }
+
+    send_mouseup_to_window(cursor, window) {
+        this.send(INPUT.MAKE_MouseUp({
             x: cursor.x - window.bounds.x,
             y: cursor.y - window.bounds.y,
             app: window.owner,
@@ -301,4 +320,5 @@ export class Manager {
             window:win.id
         }))
     }
+
 }
