@@ -26,6 +26,14 @@ const DOM_KEYCODE_TO_KEYCODE_MAP = {
     8:'BACKSPACE',
     32:'SPACE',
     16:'SHIFT',
+    49:1,
+    37:'LEFT',
+    38:'UP',
+    39:'RIGHT',
+    40:'DOWN',
+}
+for(let i=48; i<=57; i++) {
+    DOM_KEYCODE_TO_KEYCODE_MAP[i] = String.fromCharCode(i)
 }
 for(let i=65; i<=90; i++) {
     DOM_KEYCODE_TO_KEYCODE_MAP[i] = String.fromCharCode(i)
