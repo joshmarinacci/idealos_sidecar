@@ -21,6 +21,22 @@ class Win {
     }
 }
 
+const DOM_KEYCODE_TO_KEYCODE_MAP = {
+    13:'ENTER',
+    8:'BACKSPACE',
+    32:'SPACE',
+    16:'SHIFT',
+}
+for(let i=65; i<=90; i++) {
+    DOM_KEYCODE_TO_KEYCODE_MAP[i] = String.fromCharCode(i)
+}
+console.log("dom keycode map",DOM_KEYCODE_TO_KEYCODE_MAP)
+
+function to_keyname(e) {
+    if(!DOM_KEYCODE_TO_KEYCODE_MAP[e.keyCode]) return 'X'
+    return DOM_KEYCODE_TO_KEYCODE_MAP[e.keyCode]
+}
+
 export class Manager {
     constructor() {
         this.windows_list = []
@@ -127,6 +143,8 @@ export class Manager {
     draw_image(msg) {
         let win = this.findWindow(msg.window)
         if (!win) return
+        if(msg.width <= 0) return
+        if(msg.height <= 0) return
 
         //copy pixels to new image data
         let id = new ImageData(msg.width, msg.height)
@@ -186,8 +204,8 @@ export class Manager {
             window.chrome.y = window.bounds.y - 2 - 10
         } else {
             //send to first window underneath
-            let window = this.windows_list.find(win => win.bounds.contains(cursor))
-            if (window) return this.send_mousemove_to_window(cursor, window)
+            // let window = this.windows_list.find(win => win.bounds.contains(cursor))
+            // if (window) return this.send_mousemove_to_window(cursor, window)
         }
     }
 
@@ -204,6 +222,19 @@ export class Manager {
             if (window.window_type === 'menu') return this.send_mousedup_to_window(cursor, window)
             if (window.bounds.contains(cursor)) return this.send_mouseup_to_window(cursor, window)
         }
+    }
+
+    key_down(e) {
+        console.log("keydown ",e.keyCode,'shift',e.shiftKey)
+        if(!this.focused_window) return console.warn("no window focused")
+        let win = this.findWindow(this.focused_window)
+        this.send(INPUT.MAKE_KeyboardDown({
+            keyname:to_keyname(e),
+            shift:e.shiftKey,
+            app:win.owner,
+            window:win.id
+        }))
+
     }
 
     setConnection(connection) {

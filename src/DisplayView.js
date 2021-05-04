@@ -52,6 +52,11 @@ export function DisplayView({connection}) {
         redraw()
     }
 
+    function key_down(e) {
+        manager.key_down(e)
+        redraw()
+    }
+
     function zoom_in() {
         set_zoom(zoom+1)
     }
@@ -132,11 +137,12 @@ export function DisplayView({connection}) {
             <label>{Math.pow(2,zoom)+"00%"}</label>
             <button onClick={()=>zoom_out()}>-</button>
         </HBox>
-        <canvas className={'display-view'} style={{
+        <canvas className={'display-view'} tabIndex={0} style={{
         border: '1px solid black'
     }} width={500} height={500} ref={canvas}
                    onMouseDown={mouse_down}
                    onMouseMove={mouse_move}
                    onMouseUp={mouse_up}
+                onKeyDown={key_down}
     /></div>
 }
