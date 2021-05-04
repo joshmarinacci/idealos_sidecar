@@ -226,8 +226,8 @@ export class Manager {
         let window = this.windows_list.find(win => win.chrome.contains(cursor))
         if (window) {
             if (window.window_type === 'menubar') return this.send_mouseup_to_window(cursor, window)
-            if (window.window_type === 'dock') return this.send_mousedup_to_window(cursor, window)
-            if (window.window_type === 'menu') return this.send_mousedup_to_window(cursor, window)
+            if (window.window_type === 'dock') return this.send_mouseup_to_window(cursor, window)
+            if (window.window_type === 'menu') return this.send_mouseup_to_window(cursor, window)
             if (window.bounds.contains(cursor)) return this.send_mouseup_to_window(cursor, window)
         }
     }
