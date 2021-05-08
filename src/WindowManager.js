@@ -218,11 +218,21 @@ export class Manager {
     }
 
     mouse_up(e) {
+        let rect = e.target.getBoundingClientRect()
+        let cursor = new Point((e.clientX - rect.x) / this.SCALE, (e.clientY - rect.y) / this.SCALE)
+        if(this.drag_started) {
+            let window = this.windows_list.find(win => win.id === this.drag_window_id)
+            let off = this.drag_offset.add(cursor)
+            window.bounds.x = off.x
+            window.bounds.y = off.y
+            window.chrome.x = window.bounds.x - 2
+            window.chrome.y = window.bounds.y - 2 - 10
+            console.log("finished moving",window.bounds)
+            this.send_window_set_position(window)
+        }
         this.drag_started = false
         this.drag_window_id = ""
         this.drag_offset = null
-        let rect = e.target.getBoundingClientRect()
-        let cursor = new Point((e.clientX - rect.x) / this.SCALE, (e.clientY - rect.y) / this.SCALE)
         let window = this.windows_list.find(win => win.chrome.contains(cursor))
         if (window) {
             if (window.window_type === 'menubar') return this.send_mouseup_to_window(cursor, window)
@@ -360,4 +370,12 @@ export class Manager {
         }))
     }
 
+    send_window_set_position(win) {
+        this.send(WINDOWS.MAKE_WindowSetPosition({
+            app:win.owner,
+            window:win.id,
+            x:win.bounds.x,
+            y:win.bounds.y,
+        }))
+    }
 }
