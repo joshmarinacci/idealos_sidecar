@@ -66,7 +66,8 @@ const FILTERS= {
     GFX:'GFX',
     WINDOW:'WINDOW',
     APP:'APP',
-    INPUT:'INPUT'
+    INPUT:'INPUT',
+    APPLOG: 'APPLOG'
 }
 
 function is_window_type(msg) {
@@ -115,6 +116,10 @@ function is_input_type(msg) {
     )
 }
 
+function is_applog_type(msg) {
+    return (msg.type === GENERAL.TYPE_Log)
+}
+
 export function MessageList({connection}) {
     let [messages, set_messages] = useState([])
     let [repaint, set_repaint] = useState(0)
@@ -124,6 +129,7 @@ export function MessageList({connection}) {
     if(filter === FILTERS.WINDOW) messages = messages.filter(is_window_type)
     if(filter === FILTERS.APP) messages = messages.filter(is_app_type)
     if(filter === FILTERS.INPUT) messages = messages.filter(is_input_type)
+    if(filter === FILTERS.APPLOG) messages = messages.filter(is_applog_type)
 
     const update_messages =()=> {
         set_messages(connection.messages.slice())
@@ -144,6 +150,7 @@ export function MessageList({connection}) {
             <button onClick={()=>update_filter(FILTERS.WINDOW)}>win</button>
             <button onClick={()=>update_filter(FILTERS.GFX)}>gfx</button>
             <button onClick={()=>update_filter(FILTERS.INPUT)}>input</button>
+            <button onClick={()=>update_filter(FILTERS.APPLOG)}>applog</button>
         </h3>
         <div className={'message-list'}>
             <ul>{messages.map((msg, i) => <MessageView key={i} message={msg} repaint={repaint} set_repaint={set_repaint}/>)}</ul>
