@@ -170,11 +170,15 @@ export class Manager {
         ctx.drawImage(can, msg.x, msg.y)
     }
 
+    find_top_window_at(cursor) {
+        return this.windows_list.slice().reverse().find(win => win.chrome.contains(cursor))
+    }
+
     mouse_down(e) {
         //if clicked on window or within title bar
         let rect = e.target.getBoundingClientRect()
         let cursor = new Point((e.clientX - rect.x) / this.SCALE, (e.clientY - rect.y) / this.SCALE)
-        let window = this.windows_list.find(win => win.chrome.contains(cursor))
+        let window = this.find_top_window_at(cursor)
         if (window) {
             if (window.window_type === 'menubar') return this.send_mousedown_to_window(cursor, window)
             if (window.window_type === 'dock') return this.send_mousedown_to_window(cursor, window)
@@ -204,7 +208,7 @@ export class Manager {
         let cursor = new Point((e.clientX - rect.x) / this.SCALE, (e.clientY - rect.y) / this.SCALE)
         this.cursor = cursor
         if (this.drag_started) {
-            let window = this.windows_list.find(win => win.id === this.drag_window_id)
+            let window = this.findWindow(this.drag_window_id)
             let off = this.drag_offset.add(cursor)
             window.bounds.x = off.x
             window.bounds.y = off.y
@@ -221,7 +225,7 @@ export class Manager {
         let rect = e.target.getBoundingClientRect()
         let cursor = new Point((e.clientX - rect.x) / this.SCALE, (e.clientY - rect.y) / this.SCALE)
         if(this.drag_started) {
-            let window = this.windows_list.find(win => win.id === this.drag_window_id)
+            let window = this.findWindow(this.drag_window_id)
             let off = this.drag_offset.add(cursor)
             window.bounds.x = off.x
             window.bounds.y = off.y
@@ -233,7 +237,7 @@ export class Manager {
         this.drag_started = false
         this.drag_window_id = ""
         this.drag_offset = null
-        let window = this.windows_list.find(win => win.chrome.contains(cursor))
+        let window = this.find_top_window_at(cursor)
         if (window) {
             if (window.window_type === 'menubar') return this.send_mouseup_to_window(cursor, window)
             if (window.window_type === 'dock') return this.send_mouseup_to_window(cursor, window)
