@@ -21,29 +21,6 @@ class Win {
     }
 }
 
-const DOM_KEYCODE_TO_KEYCODE_MAP = {
-    13:'ENTER',
-    8:'BACKSPACE',
-    32:'SPACE',
-    16:'SHIFT',
-    49:1,
-    37:'LEFT',
-    38:'UP',
-    39:'RIGHT',
-    40:'DOWN',
-}
-for(let i=48; i<=57; i++) {
-    DOM_KEYCODE_TO_KEYCODE_MAP[i] = String.fromCharCode(i)
-}
-for(let i=65; i<=90; i++) {
-    DOM_KEYCODE_TO_KEYCODE_MAP[i] = String.fromCharCode(i)
-}
-console.log("dom keycode map",DOM_KEYCODE_TO_KEYCODE_MAP)
-
-function to_keyname(e) {
-    if(!DOM_KEYCODE_TO_KEYCODE_MAP[e.keyCode]) return 'X'
-    return DOM_KEYCODE_TO_KEYCODE_MAP[e.keyCode]
-}
 
 export class Manager {
     constructor() {
@@ -247,15 +224,19 @@ export class Manager {
     }
 
     key_down(e) {
-        console.log("keydown ",e.keyCode,'shift',e.shiftKey)
         if(!this.focused_window) return console.warn("no window focused")
         let win = this.findWindow(this.focused_window)
-        this.send(INPUT.MAKE_KeyboardDown({
-            keyname:to_keyname(e),
+        let msg = INPUT.MAKE_KeyboardDown({
+            key:e.key,
+            code:e.code,
             shift:e.shiftKey,
+            alt:e.altKey,
+            meta:e.metaKey,
+            ctrl:e.ctrlKey,
             app:win.owner,
             window:win.id
-        }))
+        })
+        this.send(msg)
 
     }
 
