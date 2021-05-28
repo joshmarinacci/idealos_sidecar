@@ -105,7 +105,7 @@ export class Manager {
             this.draw_window_overlays(c,win,settings)
         })
 
-        this.draw_cursor_coords(c)
+        if(settings['cursor_pos']) this.draw_cursor_coords(c)
         c.restore()
     }
 

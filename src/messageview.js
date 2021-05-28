@@ -26,7 +26,7 @@ function MessageView({message, repaint, set_repaint}) {
     if(message._open) {
         if (message.type) {
             if (message.type === GRAPHICS.TYPE_DrawPixel) return <li>px {message.x},{message.y}, {message.color}</li>
-            if (message.type === GRAPHICS.TYPE_DrawRect) return ""
+            if (message.type === GRAPHICS.TYPE_DrawRect) return <li>draw rect {message.x},{message.y}, {message.width},{message.height},{message.color} win = {message.window}</li>
             if (message.type === GRAPHICS.TYPE_DrawImage) return ""
             if (message.type === GENERAL.TYPE_Log) return <li
                 className={'log'}>{message.data.map(el => props_array_string(el))}</li>
@@ -50,7 +50,8 @@ function MessageView({message, repaint, set_repaint}) {
                 className={'window'}>{props_array_string(message)}</li>
             if (message.type === WINDOWS.TYPE_window_close_response) return <li
                 className={'window'}>{props_array_string(message)}</li>
-            // console.log("message",message)
+            console.log("message",message)
+            return <li>unknown message {message.type}</li>
         }
     } else {
         return <li><b onClick={expand}>{message.type}</b></li>

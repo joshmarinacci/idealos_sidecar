@@ -5,10 +5,9 @@ import {Manager} from './WindowManager.js'
 
 const settings = {
     window_name:true,
-    window_size:true,
+    window_size:false,
+    cursor_pos:false,
 }
-
-const manager = new Manager()
 
 function HBox({children}) {
     return <div className={'hbox'}>{children}</div>
@@ -22,7 +21,7 @@ function Spacer() {
 }
 
 
-export function DisplayView({connection}) {
+export function DisplayView({connection,manager}) {
     manager.setConnection(connection)
     let canvas = useRef()
 

@@ -1,6 +1,7 @@
 import {useEffect} from 'react'
 import {DEBUG, MAKE_apps_list} from 'idealos_schemas/js/debug.js'
 import {GENERAL} from 'idealos_schemas/js/general.js'
+import {WINDOWS} from 'idealos_schemas/js/windows.js'
 
 const on = (elm, type, cb) => elm.addEventListener(type,cb)
 function log(...args) { console.log(...args) }
@@ -82,6 +83,13 @@ export class Connection {
             this.messages = this.messages.slice(this.messages.length-MAX_MESSAGES)
         }
     }
+
+    send_redraw_windows_request() {
+        for(let win of this.window_manager.windows_list) {
+            this.send(WINDOWS.MAKE_window_refresh_request({target:win.owner, window:win.id}))
+        }
+    }
+
 }
 
 

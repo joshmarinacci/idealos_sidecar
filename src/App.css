@@ -8,6 +8,10 @@
 .connection-view {
   grid-column: 1;
 }
+.actions-panel {
+  grid-column: 1;
+  grid-row: 3;
+}
 .app-list {
   grid-column: 1;
   grid-row: 2;
