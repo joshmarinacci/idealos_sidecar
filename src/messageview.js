@@ -27,7 +27,7 @@ function MessageView({message, repaint, set_repaint}) {
         if (message.type) {
             if (message.type === GRAPHICS.TYPE_DrawPixel) return <li>px {message.x},{message.y}, {message.color}</li>
             if (message.type === GRAPHICS.TYPE_DrawRect) return <li>draw rect {message.x},{message.y}, {message.width},{message.height},{message.color} win = {message.window}</li>
-            if (message.type === GRAPHICS.TYPE_DrawImage) return ""
+            if (message.type === GRAPHICS.TYPE_DrawImage) return <li>draw image {message.x},{message.y}, {message.width},{message.height} win={message.window}</li>
             if (message.type === GENERAL.TYPE_Log) return <li
                 className={'log'}>{message.data.map(el => props_array_string(el))}</li>
 
