@@ -232,10 +232,11 @@ export class Manager {
             shift:e.shiftKey,
             alt:e.altKey,
             meta:e.metaKey,
-            ctrl:e.ctrlKey,
+            control:e.ctrlKey,
             app:win.owner,
             window:win.id
         })
+        console.log("key event",e,msg)
         this.send(msg)
 
     }
