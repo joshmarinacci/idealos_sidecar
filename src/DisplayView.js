@@ -21,7 +21,7 @@ function Spacer() {
 }
 
 
-export function DisplayView({connection,manager}) {
+export function DisplayView({connection,manager,tracker}) {
     manager.setConnection(connection)
     let canvas = useRef()
 
@@ -109,6 +109,7 @@ export function DisplayView({connection,manager}) {
                 return redraw()
             }
             if(msg.type === GRAPHICS.TYPE_DrawRect) {
+                tracker.draw_rect(msg)
                 manager.draw_rect(msg)
                 if(canvas.current) manager.redraw(canvas.current.getContext('2d'),canvas.current)
                 return redraw()

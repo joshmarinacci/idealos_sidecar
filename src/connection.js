@@ -61,6 +61,8 @@ export class Connection {
         this.listeners[type].forEach(l => l(payload))
     }
     send(msg) {
+        msg.id = "msg_" + Math.floor(Math.random()*1000000)
+        if(this.tracker) this.tracker.send(msg)
         this.appendMessage(msg)
         this.socket.send(JSON.stringify(msg))
     }
