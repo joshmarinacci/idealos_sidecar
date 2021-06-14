@@ -2,6 +2,7 @@ import {useEffect} from 'react'
 import {DEBUG, MAKE_apps_list} from 'idealos_schemas/js/debug.js'
 import {GENERAL} from 'idealos_schemas/js/general.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
+import {make_load_font_request} from './fonts.js'
 
 const on = (elm, type, cb) => elm.addEventListener(type,cb)
 function log(...args) { console.log(...args) }
@@ -27,6 +28,8 @@ export class Connection {
             this.socket.send(JSON.stringify({type:"DEBUG_LIST", sender:'DEBUG_CLIENT'}))
             this.fire("connect",{})
             this.send(GENERAL.MAKE_ScreenStart())
+            this.send(make_load_font_request('base'))
+            this.send(make_load_font_request('symbol'))
         })
         on(this.socket,'error',(e)=> log("error",e))
         on(this.socket, 'close',(e)=>{

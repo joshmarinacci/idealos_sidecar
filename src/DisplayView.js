@@ -89,6 +89,10 @@ export function DisplayView({connection,manager,tracker}) {
                 })
                 return redraw()
             }
+            if(msg.type === 'request-font-response') {
+                console.log("Manager is",manager)
+                manager.font_received(msg)
+            }
             if (msg.type === WINDOWS.TYPE_WindowOpenDisplay) {
                 manager.open_window(msg.window)
                 return redraw()

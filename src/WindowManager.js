@@ -1,9 +1,10 @@
 import {Bounds, Point} from './math.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
+import {JoshFont} from './fonts.js'
 
-const CLOSE_BUTTON_SIZE = 8
-const RESIZE_BUTTON_SIZE = 8
+const CLOSE_BUTTON_SIZE = 9
+const RESIZE_BUTTON_SIZE = 10
 const BORDER_WIDTH = 1
 const TITLEBAR_HEIGHT = 10
 class Win {
@@ -54,6 +55,7 @@ export class Manager {
         this.resize_started = false
         this.focused_window = ""
         this.cursor = new Point(0, 0)
+        this.fonts = {}
     }
 
     get_scale() {
@@ -61,6 +63,16 @@ export class Manager {
     }
     set_scale(s) {
         this.SCALE = s
+    }
+
+    font_received(msg) {
+        if(msg.succeeded) {
+            // console.log("good font")
+            // console.log("font is",msg)
+            this.fonts[msg.name] = new JoshFont(msg.font)
+        } else {
+            console.warn("font load failed",msg.name)
+        }
     }
 
     init_windows(windows) {
@@ -386,21 +398,29 @@ export class Manager {
 
             //close button
             {
-                c.fillStyle = 'black'
                 let button = win.close_button_bounds
-                c.fillRect(button.x, button.y, button.width, button.height)
                 c.fillStyle = 'white'
-                c.fillRect(button.x+1, button.y+1, button.width-2, button.height-2)
+                c.fillRect(button.x, button.y, button.width, button.height)
+                if(this.fonts['base']) {
+                    let font = this.fonts['base']
+                    let glyph = font.find_glyph_by_id(14)
+                    c.drawImage(font.get_canvas_for_glyph(glyph),button.x,button.y)
+                }
             }
 
 
             //resize button
             {
-                c.fillStyle = 'black'
+                // c.fillStyle = 'black'
                 let button = win.resize_button_bounds
-                c.fillRect(button.x, button.y, button.width, button.height)
-                c.fillStyle = 'white'
-                c.fillRect(button.x+1, button.y+1, button.width-2, button.height-2)
+                // c.fillRect(button.x, button.y, button.width, button.height)
+                // c.fillStyle = 'white'
+                // c.fillRect(button.x+1, button.y+1, button.width-2, button.height-2)
+                if(this.fonts['base']) {
+                    let font = this.fonts['base']
+                    let glyph = font.find_glyph_by_id(15)
+                    c.drawImage(font.get_canvas_for_glyph(glyph),button.x,button.y)
+                }
             }
             c.restore()
         }
@@ -468,5 +488,7 @@ export class Manager {
             height:win.bounds.height,
         })
     }
+
+
 
 }

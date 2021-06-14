@@ -22,11 +22,11 @@ class PerformanceTracker {
         if(msg.trigger) {
             // console.log("draw rect with trigger received",msg)
             if(!this.messages[msg.trigger]) {
-                console.log("missing original")
+                // console.log("missing original")
             } else {
                 let start = this.messages[msg.trigger]
                 let now = Date.now()
-                console.log("comparing to", now-start)
+                // console.log("comparing to", now-start)
             }
         }
     }
