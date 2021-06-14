@@ -141,6 +141,7 @@ export class Manager {
                 this.draw_window_overlays(c, win, settings)
             })
 
+            this.draw_cursor(c)
             if (settings['cursor_pos']) this.draw_cursor_coords(c)
             c.restore()
         } catch (e) {
@@ -358,6 +359,19 @@ export class Manager {
         }))
     }
 
+    draw_cursor(c) {
+        c.save()
+        c.translate(this.cursor.x, this.cursor.y)
+        if(this.fonts['base']) {
+            let font = this.fonts['base']
+            let glyph = font.find_glyph_by_id(1)
+            c.fillStyle = "white"
+            c.fillRect(0,0,10,10)
+            c.drawImage(font.get_canvas_for_glyph(glyph),0,0)
+        }
+        c.restore()
+    }
+
     draw_cursor_coords(c) {
         c.save()
         c.translate(this.cursor.x + 10, this.cursor.y - 10)
@@ -488,7 +502,6 @@ export class Manager {
             height:win.bounds.height,
         })
     }
-
 
 
 }

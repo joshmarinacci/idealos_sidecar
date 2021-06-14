@@ -142,7 +142,8 @@ export function DisplayView({connection,manager,tracker}) {
             <button onClick={()=>zoom_out()}>-</button>
         </HBox>
         <canvas className={'display-view'} tabIndex={0} style={{
-        border: '1px solid black'
+        border: '1px solid black',
+        cursor:"none",
     }} width={500} height={500} ref={canvas}
                    onMouseDown={mouse_down}
                    onMouseMove={mouse_move}
