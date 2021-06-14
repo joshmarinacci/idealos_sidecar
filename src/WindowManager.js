@@ -2,9 +2,9 @@ import {Bounds, Point} from './math.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 
-const CLOSE_BUTTON_SIZE = 5
-const RESIZE_BUTTON_SIZE = 10
-const BORDER_WIDTH = 2
+const CLOSE_BUTTON_SIZE = 8
+const RESIZE_BUTTON_SIZE = 8
+const BORDER_WIDTH = 1
 const TITLEBAR_HEIGHT = 10
 class Win {
     constructor(opts) {
@@ -110,26 +110,30 @@ export class Manager {
     }
 
     redraw(c, canvas, settings) {
-        if (!c) return
-        if (!settings) return
-        if (!this.windows_list) return
+        try {
+            if (!c) return
+            if (!settings) return
+            if (!this.windows_list) return
 
-        //draw background
-        c.save()
-        c.imageSmoothingEnabled = false
-        c.scale(this.SCALE, this.SCALE)
-        c.fillStyle = 'white'
-        c.fillRect(0, 0, canvas.width, canvas.height)
+            //draw background
+            c.save()
+            c.imageSmoothingEnabled = false
+            c.scale(this.SCALE, this.SCALE)
+            c.fillStyle = 'white'
+            c.fillRect(0, 0, canvas.width, canvas.height)
 
-        //for each window
-        this.windows_list.forEach(win => {
-            this.draw_window_content(c,win)
-            this.draw_window_chrome(c,win)
-            this.draw_window_overlays(c,win,settings)
-        })
+            //for each window
+            this.windows_list.forEach(win => {
+                this.draw_window_content(c, win)
+                this.draw_window_chrome(c, win)
+                this.draw_window_overlays(c, win, settings)
+            })
 
-        if(settings['cursor_pos']) this.draw_cursor_coords(c)
-        c.restore()
+            if (settings['cursor_pos']) this.draw_cursor_coords(c)
+            c.restore()
+        } catch (e) {
+            console.log("error",e)
+        }
     }
 
     draw_pixel(msg) {
@@ -174,6 +178,16 @@ export class Manager {
         return this.windows_list.slice().reverse().find(win => win.chrome.contains(cursor))
     }
 
+    raise_window(window) {
+        let n = this.windows_list.indexOf(window)
+        console.log("window is at",window)
+        if(n >= 0) {
+            this.windows_list.splice(n, 1)
+            this.windows_list.push(window)
+        }
+    }
+
+
     mouse_down(e) {
         //if clicked on window or within title bar
         //if any child windows are open, we should close them automatically, right
@@ -205,6 +219,7 @@ export class Manager {
             if (window.bounds.contains(cursor)) {
                 this.send_mousedown_to_window(cursor, window)
                 this.set_focused_window(window)
+                this.raise_window(window)
                 return
             }
             //set focus
@@ -348,7 +363,7 @@ export class Manager {
     draw_window_content(c,win) {
         {
             //draw bg of window
-            c.fillStyle = 'white'
+            c.fillStyle = 'orange'
             c.fillRect(win.bounds.x, win.bounds.y, win.bounds.width, win.bounds.height)
             //draw contents of window
             c.drawImage(win.canvas, win.bounds.x, win.bounds.y)
@@ -360,27 +375,34 @@ export class Manager {
             let chrome = win.chrome
 
             //background and border
-            c.fillStyle = 'cyan'
+            c.fillStyle = 'black'
             if (win.id === this.focused_window) c.fillStyle = 'red'
-            c.fillRect(chrome.x,chrome.y,BORDER_WIDTH,chrome.height)
-            c.fillRect(chrome.x+chrome.width-BORDER_WIDTH,chrome.y,BORDER_WIDTH,chrome.height)
-            c.fillRect(chrome.x+BORDER_WIDTH,chrome.y,chrome.width-BORDER_WIDTH*2,TITLEBAR_HEIGHT)
-            c.fillRect(chrome.x+BORDER_WIDTH,chrome.y+chrome.height-BORDER_WIDTH,chrome.width-BORDER_WIDTH*2,BORDER_WIDTH)
+            c.save()
+            c.translate(chrome.x,chrome.y)
+            c.fillRect(0,0,BORDER_WIDTH,chrome.height) //left edge
+            c.fillRect(chrome.width-BORDER_WIDTH,0,BORDER_WIDTH,chrome.height) //right edge
+            c.fillRect(BORDER_WIDTH,0,chrome.width-BORDER_WIDTH*2,BORDER_WIDTH+TITLEBAR_HEIGHT) //top
+            c.fillRect(BORDER_WIDTH,chrome.height-BORDER_WIDTH,chrome.width-BORDER_WIDTH*2,BORDER_WIDTH)
 
             //close button
             {
                 c.fillStyle = 'black'
                 let button = win.close_button_bounds
-                c.fillRect(chrome.x + button.x, chrome.y + button.y, button.width, button.height)
+                c.fillRect(button.x, button.y, button.width, button.height)
+                c.fillStyle = 'white'
+                c.fillRect(button.x+1, button.y+1, button.width-2, button.height-2)
             }
 
 
             //resize button
             {
-                c.fillStyle = 'green'
+                c.fillStyle = 'black'
                 let button = win.resize_button_bounds
-                c.fillRect(chrome.x + button.x, chrome.y + button.y, button.width, button.height)
+                c.fillRect(button.x, button.y, button.width, button.height)
+                c.fillStyle = 'white'
+                c.fillRect(button.x+1, button.y+1, button.width-2, button.height-2)
             }
+            c.restore()
         }
     }
     draw_window_overlays(c,win,settings) {
