@@ -2,7 +2,10 @@ import {Bounds, Point} from './math.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 
-const CLOSE_INSET = 5
+const CLOSE_BUTTON_SIZE = 5
+const RESIZE_BUTTON_SIZE = 10
+const BORDER_WIDTH = 2
+const TITLEBAR_HEIGHT = 10
 class Win {
     constructor(opts) {
         this.id = opts.id
@@ -10,14 +13,34 @@ class Win {
         this.window_type = opts.window_type
         this.parent = opts.parent
         this.bounds = opts.bounds
-        this.chrome = opts.chrome
-        this.close_button_bounds = new Bounds(this.chrome.width-CLOSE_INSET-1,1,CLOSE_INSET,CLOSE_INSET)
+        this.regenerate_chrome_bounds()
+        this.close_button_bounds = new Bounds(0,0,CLOSE_BUTTON_SIZE,CLOSE_BUTTON_SIZE)
+        this.resize_button_bounds = new Bounds(0, 0,RESIZE_BUTTON_SIZE,RESIZE_BUTTON_SIZE)
+        this.reposition_chrome_buttons()
+        this.regenerate_backbuffer()
+    }
+
+    reposition_chrome_buttons() {
+        this.close_button_bounds.x = this.chrome.width - this.close_button_bounds.width - BORDER_WIDTH
+        this.close_button_bounds.y = BORDER_WIDTH
+        this.resize_button_bounds.x = this.chrome.width - this.resize_button_bounds.width
+        this.resize_button_bounds.y = this.chrome.height - this.resize_button_bounds.height
+    }
+
+    regenerate_backbuffer() {
         this.canvas = document.createElement('canvas')
         this.canvas.width = this.bounds.width
         this.canvas.height = this.bounds.height
         let ctx = this.canvas.getContext('2d')
         ctx.fillStyle = 'black'
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+    }
+
+    regenerate_chrome_bounds() {
+        this.chrome = new Bounds(this.bounds.x - BORDER_WIDTH,
+            this.bounds.y - BORDER_WIDTH - TITLEBAR_HEIGHT,
+            this.bounds.width + BORDER_WIDTH*2,
+            this.bounds.height + BORDER_WIDTH*2 + TITLEBAR_HEIGHT)
     }
 }
 
@@ -28,6 +51,7 @@ export class Manager {
         this.windows_map = {}
         this.SCALE = 2
         this.drag_started = false
+        this.resize_started = false
         this.focused_window = ""
         this.cursor = new Point(0, 0)
     }
@@ -55,7 +79,6 @@ export class Manager {
             owner: win.owner,
             window_type: win.window_type,
             bounds: new Bounds(win.x, win.y, win.width, win.height),
-            chrome: new Bounds(win.x - 2, win.y - 2 - 10, win.width + 2 + 2, win.height + 2 + 10 + 2)
         })
         this.windows_list.push(w)
         this.windows_map[w.id] = w
@@ -69,7 +92,6 @@ export class Manager {
             parent: msg.parent,
             window_type: win.window_type,
             bounds: new Bounds(win.x, win.y, win.width, win.height),
-            chrome: new Bounds(win.x - 2, win.y - 2 - 10, win.width + 2 + 2, win.height + 2 + 10 + 2)
         })
         this.windows_list.push(w)
         this.windows_map[w.id] = w
@@ -101,7 +123,8 @@ export class Manager {
 
         //for each window
         this.windows_list.forEach(win => {
-            this.draw_window(c,win)
+            this.draw_window_content(c,win)
+            this.draw_window_chrome(c,win)
             this.draw_window_overlays(c,win,settings)
         })
 
@@ -153,6 +176,7 @@ export class Manager {
 
     mouse_down(e) {
         //if clicked on window or within title bar
+        //if any child windows are open, we should close them automatically, right
         let rect = e.target.getBoundingClientRect()
         let cursor = new Point((e.clientX - rect.x) / this.SCALE, (e.clientY - rect.y) / this.SCALE)
         let window = this.find_top_window_at(cursor)
@@ -160,20 +184,32 @@ export class Manager {
             if (window.window_type === 'menubar') return this.send_mousedown_to_window(cursor, window)
             if (window.window_type === 'dock') return this.send_mousedown_to_window(cursor, window)
             if (window.window_type === 'menu') return this.send_mousedown_to_window(cursor, window)
+            //if inside close button
+            let pt2 = window.chrome.translate_into(cursor)
+            //if close button
+            if(window.close_button_bounds.contains(pt2)) {
+                this.send_close_window(window)
+                return
+            }
+            //if resize button
+            if(window.resize_button_bounds.contains(pt2)) {
+                //set focus
+                this.set_focused_window(window)
+                this.resize_started = true
+                this.drag_window_id = window.id
+                this.drag_offset = new Point(window.bounds.x, window.bounds.y).subtract(cursor)
+                this.resize_start_size = window.bounds
+                return
+            }
             //if inside window content send to window
             if (window.bounds.contains(cursor)) {
                 this.send_mousedown_to_window(cursor, window)
                 this.set_focused_window(window)
                 return
             }
-            //if inside close button
-            let pt2 = window.chrome.translate_into(cursor)
-            if(window.close_button_bounds.contains(pt2)) {
-                this.send_close_window(window)
-                return
-            }
-            //skip types that can be dragged or made the focus
+            //set focus
             this.set_focused_window(window)
+            //start moving the window
             this.drag_started = true
             this.drag_window_id = window.id
             this.drag_offset = new Point(window.bounds.x, window.bounds.y).subtract(cursor)
@@ -189,12 +225,16 @@ export class Manager {
             let off = this.drag_offset.add(cursor)
             window.bounds.x = off.x
             window.bounds.y = off.y
-            window.chrome.x = window.bounds.x - 2
-            window.chrome.y = window.bounds.y - 2 - 10
-        } else {
-            //send to first window underneath
-            // let window = this.windows_list.find(win => win.bounds.contains(cursor))
-            // if (window) return this.send_mousemove_to_window(cursor, window)
+            window.chrome.x = window.bounds.x - BORDER_WIDTH
+            window.chrome.y = window.bounds.y - BORDER_WIDTH - TITLEBAR_HEIGHT
+            return
+        }
+        if(this.resize_started) {
+            let window = this.findWindow(this.drag_window_id)
+            window.chrome.width = cursor.x - window.chrome.x
+            window.chrome.height = cursor.y - window.chrome.y
+            window.reposition_chrome_buttons()
+            return
         }
     }
 
@@ -204,14 +244,22 @@ export class Manager {
         if(this.drag_started) {
             let window = this.findWindow(this.drag_window_id)
             let off = this.drag_offset.add(cursor)
-            window.bounds.x = off.x
-            window.bounds.y = off.y
-            window.chrome.x = window.bounds.x - 2
-            window.chrome.y = window.bounds.y - 2 - 10
-            console.log("finished moving",window.bounds)
+            window.bounds.x = Math.floor(off.x)
+            window.bounds.y = Math.floor(off.y)
+            window.regenerate_chrome_bounds()
             this.send_window_set_position(window)
         }
+        if(this.resize_started) {
+            let window = this.findWindow(this.drag_window_id)
+            window.bounds.width = Math.floor(window.chrome.width -BORDER_WIDTH - BORDER_WIDTH)
+            window.bounds.height = Math.floor(window.chrome.height -BORDER_WIDTH - BORDER_WIDTH - TITLEBAR_HEIGHT)
+            window.regenerate_chrome_bounds()
+            window.reposition_chrome_buttons()
+            window.regenerate_backbuffer()
+            this.send_window_set_size(window)
+        }
         this.drag_started = false
+        this.resize_started = false
         this.drag_window_id = ""
         this.drag_offset = null
         let window = this.find_top_window_at(cursor)
@@ -296,37 +344,61 @@ export class Manager {
         c.strokeRect(0, 0, 50, 15)
         c.restore()
     }
-    draw_window(c,win) {
+
+    draw_window_content(c,win) {
+        {
+            //draw bg of window
+            c.fillStyle = 'white'
+            c.fillRect(win.bounds.x, win.bounds.y, win.bounds.width, win.bounds.height)
+            //draw contents of window
+            c.drawImage(win.canvas, win.bounds.x, win.bounds.y)
+        }
+    }
+    draw_window_chrome(c,win) {
         //draw chrome around the window
         if (win.window_type === 'plain') {
             let chrome = win.chrome
+
+            //background and border
             c.fillStyle = 'cyan'
             if (win.id === this.focused_window) c.fillStyle = 'red'
-            c.fillRect(chrome.x, chrome.y, chrome.width, chrome.height)
+            c.fillRect(chrome.x,chrome.y,BORDER_WIDTH,chrome.height)
+            c.fillRect(chrome.x+chrome.width-BORDER_WIDTH,chrome.y,BORDER_WIDTH,chrome.height)
+            c.fillRect(chrome.x+BORDER_WIDTH,chrome.y,chrome.width-BORDER_WIDTH*2,TITLEBAR_HEIGHT)
+            c.fillRect(chrome.x+BORDER_WIDTH,chrome.y+chrome.height-BORDER_WIDTH,chrome.width-BORDER_WIDTH*2,BORDER_WIDTH)
 
-            c.fillStyle = 'black'
-            let button = win.close_button_bounds
-            c.fillRect(chrome.x+button.x, chrome.y+button.y,button.width,button.height)
+            //close button
+            {
+                c.fillStyle = 'black'
+                let button = win.close_button_bounds
+                c.fillRect(chrome.x + button.x, chrome.y + button.y, button.width, button.height)
+            }
+
+
+            //resize button
+            {
+                c.fillStyle = 'green'
+                let button = win.resize_button_bounds
+                c.fillRect(chrome.x + button.x, chrome.y + button.y, button.width, button.height)
+            }
         }
-
-        //draw bg of window
-        c.fillStyle = 'white'
-        c.fillRect(win.bounds.x, win.bounds.y, win.bounds.width, win.bounds.height)
-        //draw contents of window
-        c.drawImage(win.canvas, win.bounds.x, win.bounds.y)
     }
     draw_window_overlays(c,win,settings) {
 
         if (settings.window_name) {
             c.save()
             let name = win.owner + ":" + win.id
-            c.translate(win.bounds.x + win.bounds.width, win.bounds.y + win.bounds.height)
+            c.translate(win.chrome.x + win.chrome.width, win.chrome.y + win.chrome.height)
             c.scale(0.7, 0.7)
             c.font = 'plain 16px sans-serif'
             let metrics = c.measureText(name)
-            c.translate(-metrics.width, -10)
+            c.translate(-metrics.width, 0)
+            let g = 2
+            c.fillStyle = 'black'
+            c.fillRect(-g, -g, metrics.width+g*2, 20+g*2)
             c.fillStyle = 'white'
-            c.fillRect(0, 0, metrics.width, 20)
+            g = 1
+            c.fillRect(-g, -g, metrics.width+g*2, 20+g*2)
             c.fillStyle = 'black'
             c.fillText(name, 0, 10)
             c.restore()
@@ -364,4 +436,15 @@ export class Manager {
             y:win.bounds.y,
         }))
     }
+
+    send_window_set_size(win) {
+        this.send({
+            type:"window-set-size",
+            app:win.owner,
+            window:win.id,
+            width:win.bounds.width,
+            height:win.bounds.height,
+        })
+    }
+
 }

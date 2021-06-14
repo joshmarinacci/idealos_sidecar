@@ -124,7 +124,7 @@ function is_applog_type(msg) {
 export function MessageList({connection}) {
     let [messages, set_messages] = useState([])
     let [repaint, set_repaint] = useState(0)
-    const [filter, set_filter] = useState(FILTERS.ALL)
+    const [filter, set_filter] = useState(FILTERS.INPUT)
 
     if(filter === FILTERS.GFX) messages = messages.filter(is_graphics_type)
     if(filter === FILTERS.WINDOW) messages = messages.filter(is_window_type)
