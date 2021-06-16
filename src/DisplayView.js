@@ -4,7 +4,7 @@ import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {Manager} from './WindowManager.js'
 
 const settings = {
-    window_name:true,
+    window_name:false,
     window_size:false,
     cursor_pos:false,
 }
