@@ -171,20 +171,25 @@ export class Manager {
         if(msg.width <= 0) return
         if(msg.height <= 0) return
 
-        //copy pixels to new image data
-        let id = new ImageData(msg.width, msg.height)
-        for (let i = 0; i < id.data.length; i++) id.data[i] = msg.pixels[i]
-
-        //draw into temp canvas
-        let can = document.createElement('canvas')
-        can.width = msg.width
-        can.height = msg.height
-        let scratch = can.getContext('2d')
-        scratch.putImageData(id, 0, 0)
-
-        //draw temp canvas to window's back buffer
         let ctx = win.canvas.getContext('2d')
-        ctx.drawImage(can, msg.x, msg.y)
+        //get pixels from the whole back buffer
+        let id = ctx.getImageData(0,0,win.canvas.width,win.canvas.height)
+        //copy message pixels
+        for(let y=msg.y; y<msg.y+msg.height; y++) {
+            for(let x=msg.x; x<msg.x+msg.width; x++) {
+                let n1 = (x + y * id.width) * 4
+                let n2 = (x-msg.x + (y-msg.y) * msg.width) * 4
+                let v = msg.pixels[n2+3]
+                if(v > 0) {
+                    id.data[n1 + 0] = 0
+                    id.data[n1 + 1] = 0
+                    id.data[n1 + 2] = 0
+                    id.data[n1 + 3] = 255
+                }
+            }
+        }
+        //put the whole backbuffer back
+        ctx.putImageData(id, 0, 0)
     }
 
     find_top_window_at(cursor) {

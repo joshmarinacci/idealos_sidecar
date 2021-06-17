@@ -29,7 +29,6 @@ export class Connection {
             this.fire("connect",{})
             this.send(GENERAL.MAKE_ScreenStart())
             this.send(make_load_font_request('base'))
-            this.send(make_load_font_request('symbol'))
         })
         on(this.socket,'error',(e)=> log("error",e))
         on(this.socket, 'close',(e)=>{
