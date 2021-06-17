@@ -177,6 +177,8 @@ export class Manager {
         //copy message pixels
         for(let y=msg.y; y<msg.y+msg.height; y++) {
             for(let x=msg.x; x<msg.x+msg.width; x++) {
+                if(x >= id.width) continue
+                if(y >= id.height) continue
                 let n1 = (x + y * id.width) * 4
                 let n2 = (x-msg.x + (y-msg.y) * msg.width) * 4
                 let v = msg.pixels[n2+3]
