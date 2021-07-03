@@ -319,6 +319,7 @@ export class Manager {
             app:win.owner,
             window:win.id
         })
+        msg.target = win.owner
         console.log("key event",e,msg)
         this.send(msg)
 
@@ -333,21 +334,26 @@ export class Manager {
     }
 
     send_mousedown_to_window(cursor, window) {
-        this.send(INPUT.MAKE_MouseDown({
+        let msg = INPUT.MAKE_MouseDown({
             x: cursor.x - window.bounds.x,
             y: cursor.y - window.bounds.y,
             app: window.owner,
+            target:window.owner,
             window: window.id
-        }))
+        })
+        msg.target = window.owner
+        this.send(msg)
     }
 
     send_mouseup_to_window(cursor, window) {
-        this.send(INPUT.MAKE_MouseUp({
+        let msg = INPUT.MAKE_MouseUp({
             x: cursor.x - window.bounds.x,
             y: cursor.y - window.bounds.y,
             app: window.owner,
             window: window.id
-        }))
+        })
+        msg.target = window.owner
+        this.send(msg)
     }
 
     set_focused_window(window) {
@@ -404,7 +410,7 @@ export class Manager {
     }
     draw_window_chrome(c,win) {
         //draw chrome around the window
-        if (win.window_type === 'plain') {
+        if (win.window_type === 'PLAIN') {
             let chrome = win.chrome
 
             //background and border
