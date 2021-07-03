@@ -78,6 +78,7 @@ export function DisplayView({connection,manager,tracker}) {
     }
 
     function dispatch_event(msg,collect) {
+        // console.log("got message",msg)
         if(msg.type === WINDOWS.TYPE_window_list) {
             // if(!Array.isArray(msg.windows)) msg.windows = [msg.windows]
             manager.init_windows(Object.values(msg.windows))
@@ -91,6 +92,7 @@ export function DisplayView({connection,manager,tracker}) {
         }
         if(msg.type === 'request-font-response') {
             manager.font_received(msg)
+            return redraw(collect)
         }
         if(msg.type === WINDOWS.TYPE_WindowOpenDisplay) {
             manager.open_window(msg.window)
@@ -124,6 +126,7 @@ export function DisplayView({connection,manager,tracker}) {
             return redraw(collect)
         }
         if(msg.type === 'group-message') {
+            // console.log("got the group message",msg.type)
             if (msg.category === 'graphics') {
                 console.time("drawing")
                 msg.messages.forEach(msg2 => {

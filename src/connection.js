@@ -25,9 +25,9 @@ export class Connection {
         on(this.socket,'open',()=>{
             log("connected to the server")
             this.connected = true
-            this.socket.send(JSON.stringify({type:"DEBUG_LIST", sender:'DEBUG_CLIENT'}))
             this.fire("connect",{})
             this.send(GENERAL.MAKE_ScreenStart())
+            this.send({type:"DEBUG_LIST", sender:'DEBUG_CLIENT'})
             this.send(make_load_font_request('base'))
         })
         on(this.socket,'error',(e)=> log("error",e))
@@ -41,7 +41,10 @@ export class Connection {
         on(this.socket,'message',(e)=>{
             // log("incoming message",e)
             let msg = JSON.parse(e.data)
-            // log("message arrived",msg)
+            log("message arrived",msg)
+            if(msg.type === GENERAL.TYPE_Connected) {
+                this.appid = msg.app
+            }
             if(msg.type === DEBUG.TYPE_ListAppsResponse) {
                 this.apps = msg.apps
                 this.fire("apps", this.apps)
@@ -66,6 +69,8 @@ export class Connection {
         msg.id = "msg_" + Math.floor(Math.random()*1000000)
         if(this.tracker) this.tracker.send(msg)
         this.appendMessage(msg)
+        msg.app = this.appid
+        console.log("sending",msg)
         this.socket.send(JSON.stringify(msg))
     }
     request_stop(appid) {
