@@ -170,7 +170,6 @@ export class Manager {
         if (!win) return
         if(msg.width <= 0) return
         if(msg.height <= 0) return
-
         let ctx = win.canvas.getContext('2d')
         //get pixels from the whole back buffer
         let id = ctx.getImageData(0,0,win.canvas.width,win.canvas.height)
@@ -182,11 +181,18 @@ export class Manager {
                 let n1 = (x + y * id.width) * 4
                 let n2 = (x-msg.x + (y-msg.y) * msg.width) * 4
                 let v = msg.pixels[n2+3]
-                if(v > 0) {
-                    id.data[n1 + 0] = 0
-                    id.data[n1 + 1] = 0
-                    id.data[n1 + 2] = 0
-                    id.data[n1 + 3] = 255
+                if(msg.depth === 8) {
+                    id.data[n1 + 0] = msg.pixels[n2+0]
+                    id.data[n1 + 1] = msg.pixels[n2+1]
+                    id.data[n1 + 2] = msg.pixels[n2+2]
+                    id.data[n1 + 3] = msg.pixels[n2+3]
+                } else {
+                    if (v > 0) {
+                        id.data[n1 + 0] = 0
+                        id.data[n1 + 1] = 0
+                        id.data[n1 + 2] = 0
+                        id.data[n1 + 3] = 255
+                    }
                 }
             }
         }

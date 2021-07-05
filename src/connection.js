@@ -41,7 +41,7 @@ export class Connection {
         on(this.socket,'message',(e)=>{
             // log("incoming message",e)
             let msg = JSON.parse(e.data)
-            log("message arrived",msg)
+            // log("message arrived",msg)
             if(msg.type === GENERAL.TYPE_Connected) {
                 this.appid = msg.app
             }
