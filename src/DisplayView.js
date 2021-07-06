@@ -1,7 +1,6 @@
 import {useEffect, useRef, useState} from 'react'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
-import {Manager} from './WindowManager.js'
 
 const settings = {
     window_name:false,

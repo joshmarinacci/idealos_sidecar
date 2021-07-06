@@ -46,6 +46,11 @@ class Win {
 }
 
 
+function lookup_css_color(color) {
+    if(color === 'white') return [255,255,255]
+    return [0,0,0]
+}
+
 export class Manager {
     constructor() {
         this.windows_list = []
@@ -181,17 +186,29 @@ export class Manager {
                 let n1 = (x + y * id.width) * 4
                 let n2 = (x-msg.x + (y-msg.y) * msg.width) * 4
                 let v = msg.pixels[n2+3]
+                //if 8bit depth, then it's a real RGBA image
                 if(msg.depth === 8) {
                     id.data[n1 + 0] = msg.pixels[n2+0]
                     id.data[n1 + 1] = msg.pixels[n2+1]
                     id.data[n1 + 2] = msg.pixels[n2+2]
                     id.data[n1 + 3] = msg.pixels[n2+3]
                 } else {
-                    if (v > 0) {
-                        id.data[n1 + 0] = 0
-                        id.data[n1 + 1] = 0
-                        id.data[n1 + 2] = 0
-                        id.data[n1 + 3] = 255
+                    if(msg.depth === 1 && msg.color) {
+                        if(v > 0) {
+                            let color = lookup_css_color(msg.color)
+                            id.data[n1 + 0] = color[0]
+                            id.data[n1 + 1] = color[1]
+                            id.data[n1 + 2] = color[2]
+                            id.data[n1 + 3] = 255
+                        }
+                    } else {
+                        //else assume it's black and white
+                        if (v > 0) {
+                            id.data[n1 + 0] = 0
+                            id.data[n1 + 1] = 0
+                            id.data[n1 + 2] = 0
+                            id.data[n1 + 3] = 255
+                        }
                     }
                 }
             }
