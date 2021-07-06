@@ -380,10 +380,13 @@ export class Manager {
     }
 
     set_focused_window(window) {
-        if (window.id !== this.focused_window && window.window_type !== 'menubar' && window.window_type !== 'menu' && window.window_type !== 'dock') {
-            this.send(WINDOWS.MAKE_SetFocusedWindow({window: window.id, target: window.owner}))
-            this.focused_window = window.id
-        }
+        if(window.id === this.focused_window) return
+        if(window.window_type === 'CHILD') return
+        if(window.window_type === 'MENUBAR') return
+        if(window.window_type === 'MENU') return
+        if(window.window_type === 'DOCK') return
+        this.send(WINDOWS.MAKE_SetFocusedWindow({window: window.id, target: window.owner}))
+        this.focused_window = window.id
     }
 
     send_mousemove_to_window(cursor, window) {
