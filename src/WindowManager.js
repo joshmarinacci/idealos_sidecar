@@ -6,7 +6,7 @@ import {JoshFont} from './fonts.js'
 const CLOSE_BUTTON_SIZE = 9
 const RESIZE_BUTTON_SIZE = 10
 const BORDER_WIDTH = 1
-const TITLEBAR_HEIGHT = 10
+const TITLEBAR_HEIGHT = 12
 class Win {
     constructor(opts) {
         this.id = opts.id
@@ -437,18 +437,26 @@ export class Manager {
         if (win.window_type === 'PLAIN') {
             let chrome = win.chrome
 
+            let bd_color = 'black'
+            if (win.id === this.focused_window) bd_color = 'black'
+
             //background and border
-            c.fillStyle = 'black'
-            if (win.id === this.focused_window) c.fillStyle = 'red'
+            c.fillStyle = bd_color
             c.save()
             c.translate(chrome.x,chrome.y)
             c.fillRect(0,0,BORDER_WIDTH,chrome.height) //left edge
             c.fillRect(chrome.width-BORDER_WIDTH,0,BORDER_WIDTH,chrome.height) //right edge
             c.fillRect(BORDER_WIDTH,0,chrome.width-BORDER_WIDTH*2,BORDER_WIDTH+TITLEBAR_HEIGHT) //top
-            c.fillRect(BORDER_WIDTH,chrome.height-BORDER_WIDTH,chrome.width-BORDER_WIDTH*2,BORDER_WIDTH)
 
+            //draw titlebar bg
+            c.fillStyle = bd_color
+            c.fillRect(BORDER_WIDTH,BORDER_WIDTH,chrome.width-BORDER_WIDTH*2,TITLEBAR_HEIGHT) //top
             //title
-            if(this.fonts['base']) this.fonts['base'].draw_text_to_canvas(c, BORDER_WIDTH, 0,  win.owner)
+            if(this.fonts['base']) this.fonts['base'].draw_text_to_canvas(c, BORDER_WIDTH+20, BORDER_WIDTH,  win.owner,'black','white')
+
+            c.fillStyle = bd_color
+            c.fillRect(BORDER_WIDTH,chrome.height-BORDER_WIDTH,chrome.width-BORDER_WIDTH*2,BORDER_WIDTH) //bottom edge
+
 
             //close button
             {
@@ -540,4 +548,10 @@ export class Manager {
     }
 
 
+    get_glyph_pattern(ctx, glyph_id, repeat) {
+        if(!this.fonts['base']) return 'magenta'
+        let gg = this.fonts['base'].find_glyph_by_id(glyph_id)
+        let img = this.fonts['base'].get_canvas_for_glyph(gg)
+        return ctx.createPattern(img,repeat)
+    }
 }

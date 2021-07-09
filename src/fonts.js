@@ -3,34 +3,29 @@ export class JoshFont {
         this.info = info
     }
 
-    draw_text_to_canvas(ctx,x,y,text,color) {
+    draw_text_to_canvas(ctx,x,y,text,color, bg) {
+        if(bg) {
+            let w = 0
+            let h = 0
+            for(let i=0; i<text.length; i++) {
+                let cp = text.codePointAt(i)
+                let g = this.find_glyph_by_id(cp)
+                let ww = (g.width-g.left-g.right)
+                w += ww
+                h = Math.max(h,g.height)
+            }
+            ctx.fillStyle = bg
+            ctx.fillRect(x,y,w,h)
+        }
         let dx = 0
         for(let i=0; i<text.length; i++) {
             let cp = text.codePointAt(i)
             let g = this.find_glyph_by_id(cp)
             let can = this.get_canvas_for_glyph(g)
-            // let bitmap = this.get_bitmap_for_glyph(g)
             ctx.drawImage(can,x+dx,y)
             dx += (g.width-g.left-g.right)
         }
     }
-    // measure_text(app,text) {
-    //     // console.log("measuring text",text)
-    //     let dx = 0
-    //     let my = 0
-    //     for(let i=0; i<text.length; i++) {
-    //         let cp = text.codePointAt(i)
-    //         // console.log(i,text,text[i],cp)
-    //         let g = this.find_glyph_by_id(cp)
-    //         dx += g.width - g.left - g.right
-    //         my = Math.max(my,g.height)
-    //     }
-    //     return {
-    //         width:dx,
-    //         height:my,
-    //     }
-    // }
-
     find_glyph_by_id(id) {
         // console.log("looking up glpyh for ",id)
         // console.log(this.info.glyphs)
