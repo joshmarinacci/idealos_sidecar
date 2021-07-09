@@ -447,16 +447,15 @@ export class Manager {
             c.fillRect(BORDER_WIDTH,0,chrome.width-BORDER_WIDTH*2,BORDER_WIDTH+TITLEBAR_HEIGHT) //top
             c.fillRect(BORDER_WIDTH,chrome.height-BORDER_WIDTH,chrome.width-BORDER_WIDTH*2,BORDER_WIDTH)
 
+            //title
+            if(this.fonts['base']) this.fonts['base'].draw_text_to_canvas(c, BORDER_WIDTH, 0,  win.owner)
+
             //close button
             {
                 let button = win.close_button_bounds
                 c.fillStyle = 'white'
                 c.fillRect(button.x, button.y, button.width, button.height)
-                if(this.fonts['base']) {
-                    let font = this.fonts['base']
-                    let glyph = font.find_glyph_by_id(14)
-                    c.drawImage(font.get_canvas_for_glyph(glyph),button.x,button.y)
-                }
+                if(this.fonts['base']) this.fonts['base'].draw_text_to_canvas(c,button.x,button.y,String.fromCodePoint(14))
             }
 
 

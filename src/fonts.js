@@ -3,24 +3,17 @@ export class JoshFont {
         this.info = info
     }
 
-/*    draw_text(app,x,y,text,color,win) {
+    draw_text_to_canvas(ctx,x,y,text,color) {
         let dx = 0
         for(let i=0; i<text.length; i++) {
             let cp = text.codePointAt(i)
             let g = this.find_glyph_by_id(cp)
-            let bitmap = this.get_bitmap_for_glyph(g)
-            // console.log(i,text,text[i],cp)
-            app.send(GRAPHICS.MAKE_DrawImage({
-                x:x+dx-g.left,
-                y:y-g.baseline+g.height,
-                width:g.width,
-                height:g.height,
-                pixels:bitmap,
-                window:win._winid,
-            }))
+            let can = this.get_canvas_for_glyph(g)
+            // let bitmap = this.get_bitmap_for_glyph(g)
+            ctx.drawImage(can,x+dx,y)
             dx += (g.width-g.left-g.right)
         }
-    }*/
+    }
     // measure_text(app,text) {
     //     // console.log("measuring text",text)
     //     let dx = 0
