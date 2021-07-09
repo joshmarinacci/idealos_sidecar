@@ -404,8 +404,6 @@ export class Manager {
         if(this.fonts['base']) {
             let font = this.fonts['base']
             let glyph = font.find_glyph_by_id(1)
-            c.fillStyle = "white"
-            c.fillRect(0,0,10,10)
             c.drawImage(font.get_canvas_for_glyph(glyph),0,0)
         }
         c.restore()
