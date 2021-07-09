@@ -44,6 +44,7 @@ export class Connection {
             // log("message arrived",msg)
             if(msg.type === GENERAL.TYPE_Connected) {
                 this.appid = msg.app
+                this.send(make_load_font_request('base'))
             }
             if(msg.type === DEBUG.TYPE_ListAppsResponse) {
                 this.apps = msg.apps
