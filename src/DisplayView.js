@@ -105,6 +105,10 @@ export function DisplayView({connection,manager,tracker}) {
             manager.close_window(msg.window)
             return redraw(collect)
         }
+        if(msg.type === "window-set-size-request") {
+            manager.resize_window(msg)
+            return redraw(collect)
+        }
         //skip
         if(msg.type === WINDOWS.TYPE_WindowOpen) return
         if(msg.type === GRAPHICS.TYPE_DrawPixel) {

@@ -101,6 +101,16 @@ export class Manager {
         this.windows_map[w.id] = w
     }
 
+    resize_window(msg) {
+        let window = this.findWindow(msg.window)
+        window.bounds.width = msg.width
+        window.bounds.height = msg.height
+        window.regenerate_chrome_bounds()
+        window.reposition_chrome_buttons()
+        window.regenerate_backbuffer()
+        this.send_window_set_size(window)
+    }
+
     open_child_window(msg) {
         let win = msg.window
         let w = new Win({
