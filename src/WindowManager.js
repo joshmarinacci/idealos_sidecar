@@ -110,6 +110,16 @@ export class Manager {
         window.regenerate_backbuffer()
         this.send_window_set_size(window)
     }
+    position_window(msg) {
+        let window = this.findWindow(msg.window)
+        window.bounds.x = msg.x
+        window.bounds.y = msg.y
+        window.regenerate_chrome_bounds()
+        window.reposition_chrome_buttons()
+        window.regenerate_backbuffer()
+        this.send_window_set_size(window)
+    }
+
 
     open_child_window(msg) {
         let win = msg.window

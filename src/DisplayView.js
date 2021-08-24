@@ -24,8 +24,9 @@ export function DisplayView({connection,manager,tracker}) {
     manager.setConnection(connection)
     let canvas = useRef()
 
-    const [zoom,set_zoom] = useState(1)
+    const [zoom,set_zoom] = useState(0)
     manager.set_scale(Math.pow(2,zoom))
+    const [size, set_size] = useState({width:300, height:300})
 
     function redraw(collect) {
         if(collect) return
@@ -76,6 +77,15 @@ export function DisplayView({connection,manager,tracker}) {
         }
     }
 
+    function do_size(size) {
+        set_size(size)
+        connection.send({
+            type: "set_screen_size",
+            width: size.width,
+            height: size.height,
+        })
+    }
+
     function dispatch_event(msg,collect) {
         // console.log("got message",msg)
         if(msg.type === WINDOWS.TYPE_window_list) {
@@ -107,6 +117,10 @@ export function DisplayView({connection,manager,tracker}) {
         }
         if(msg.type === "window-set-size-request") {
             manager.resize_window(msg)
+            return redraw(collect)
+        }
+        if(msg.type === "window-set-position-request") {
+            manager.position_window(msg)
             return redraw(collect)
         }
         //skip
@@ -154,6 +168,15 @@ export function DisplayView({connection,manager,tracker}) {
             <button onClick={()=>toggle_prop("window_name")}>name</button>
             <button onClick={()=>toggle_prop("window_size")}>size</button>
             <button onClick={()=>toggle_prop("cursor_pos")}>cursor</button>
+            <select onChange={(e)=>{
+                if(e.target.value === "320") do_size({width:320,height:200})
+                if(e.target.value === "512") do_size({width:512,height:342})
+                if(e.target.value === "640") do_size({width:640,height:480})
+            }}>
+                <option value={"320"}>320 x 200</option>
+                <option value={"512"}>512 x 342</option>
+                <option value={"640"}>640 x 480</option>
+            </select>
             <Spacer/>
             <button onClick={()=>screenshot_desktop()}>screenshot</button>
             <button onClick={()=>zoom_in()}>+</button>
@@ -163,7 +186,7 @@ export function DisplayView({connection,manager,tracker}) {
         <canvas className={'display-view'} tabIndex={0} style={{
         border: '1px solid black',
         cursor:"none",
-    }} width={500} height={500} ref={canvas}
+    }} width={size.width} height={size.height} ref={canvas}
                    onMouseDown={mouse_down}
                    onMouseMove={mouse_move}
                    onMouseUp={mouse_up}

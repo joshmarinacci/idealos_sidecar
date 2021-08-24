@@ -121,7 +121,7 @@ function is_applog_type(msg) {
     return (msg.type === GENERAL.TYPE_Log)
 }
 
-export function MessageList({connection}) {
+export function MessageList({connection, visible}) {
     let [messages, set_messages] = useState([])
     let [repaint, set_repaint] = useState(0)
     const [filter, set_filter] = useState(FILTERS.INPUT)
@@ -144,7 +144,7 @@ export function MessageList({connection}) {
         return () => connection.off('message', update_messages)
     },[connection])
 
-    return <div className={'message-view'}>
+    return <div className={'message-view'} style={{ display:visible?"block":"none"}}>
         <h3>message list
             <button onClick={()=>update_filter(FILTERS.ALL)}>all</button>
             <button onClick={()=>update_filter(FILTERS.APP)}>app</button>
